@@ -39,79 +39,54 @@ struct Deck
         : mode(mode_), slot(slot_), card(card_) {}
 };
 
-class Strategy
-{
-public:    
-    virtual queue<Deck> get() = 0;
-};
+//queue<Deck> attack_slot0(uint32_t num)
+//{
+//    queue<Deck> q;
+//
+//    q.push
+//}
 
-template<uint32_t num>
-class MkNumSlot0 : public Strategy
+queue<Deck> mk_num_slot0(uint32_t num)
 {
-public:    
-    virtual queue<Deck> get()
+    queue<Deck> q;
+
+    q.push(Deck(S2C, 0, "zero"));
+    if (num == 0)
     {
-        queue<Deck> q;
-        
-        q.push(Deck(S2C, 0, "zero"));
+        return q;
+    }
+    q.push(Deck(C2S, 0, "succ"));
+
+    int shift = msb(num);
+    for (int i=0; i<shift; ++i)
+    {
+        q.push(Deck(C2S, 0, "dbl"));
+    }
+
+    int now_num = 1 << shift;
+
+    for (int i=0; i<num-now_num; ++i)
+    {
         q.push(Deck(C2S, 0, "succ"));
-
-        int shift = msb(num);
-        for (int i=0; i<shift; ++i)
-        {
-            q.push(Deck(C2S, 0, "dbl"));
-        }
-        
-        int now_num = 1 << shift;
-
-        for (int i=0; i<num-now_num; ++i)
-        {
-            q.push(Deck(C2S, 0, "succ"));
-        }
-
-        return q;
     }
-};
 
-template<uint32_t num>
-class MkNumSlotN : public Strategy
+    return q;
+}
+
+queue<Deck> dec_slot255()
 {
-public:    
-    virtual queue<Deck> get()
-    {
-        queue<Deck> q;
-        
-        q.push(Deck(S2C, 0, "zero"));
-        q.push(Deck(C2S, 0, "succ"));
+    queue<Deck> q;
+    q.push(Deck(S2C, 0, "zero"));
+    q.push(Deck(C2S, 0, "dec"));
+    return q;
+}
 
-        int shift = msb(num);
-        for (int i=0; i<shift; ++i)
-        {
-            q.push(Deck(C2S, 0, "dbl"));
-        }
-        
-        int now_num = 1 << shift;
-
-        for (int i=0; i<num-now_num; ++i)
-        {
-            q.push(Deck(C2S, 0, "succ"));
-        }
-
-        return q;
-    }
-};
-
-class DecSlot0 : public Strategy
+queue<Deck> dec_slotN(uint32_t num)
 {
-public:    
-    virtual queue<Deck> get()
-    {
-        queue<Deck> q;
-        q.push(Deck(S2C, 0, "zero"));
-        q.push(Deck(C2S, 0, "dec"));
-        return q;
-    }
-};
+    queue<Deck> q = mk_num_slot0(num);
+    q.push(Deck(C2S, 0, "dec"));
+    return q;
+}
 
 void rd(void)
 {
@@ -174,23 +149,23 @@ int main(int argc, char* argv[])
     }
 
     int turn = atoi(argv[1]);
-
-    //Strategy* strategy = new DecSlot0;
-    Strategy* strategy = new MkNumSlot0<255>;
    
     /* 相手から */
     if (turn)
     {
         rd();
     }
-   
-    queue<Deck> deckq;
+    
+    int cnt = 0;
 
+    queue<Deck> deckq = dec_slotN(cnt);
+       
     while (true)
     {
         if (deckq.empty())
         {
-            deckq = strategy->get();
+            //cnt++;
+            deckq = dec_slotN(cnt);
         }
         
         wt(deckq.front());
@@ -198,8 +173,6 @@ int main(int argc, char* argv[])
         
         rd();
     }
-
-    delete strategy;
 
     return 0;
 }
