@@ -13,6 +13,47 @@ struct state {
     {}
 };
 
+static int
+bitcount_shift(int val)
+{
+    int i = 0;
+    int max_bitpos = 0;
+    int bit_count;
+    /* 線形探索ひどい */
+    for (i=0; i<16; i++) {
+        if (val & (1<<i)) {
+            max_bitpos = i;
+            bit_count++;
+        }
+    }
+
+    /* n回シフト + nビット分加算 */
+    return max_bitpos + bit_count;
+}
+
+static void
+emit_bit_shift(commands &dst, int val)
+{
+    int i = 0;
+    int max_bitpos = 0;
+    /* 線形探索ひどい */
+    for (i=0; i<16; i++) {
+        if (val & (1<<i)) {
+            max_bitpos = i;
+        }
+    }
+
+    for (int i=max_bitpos; i>=0; i--) {
+        if (val & (1<<i)) {
+            dst.commands.push_back(command(LEFT, 1, CARD_SUCC));
+        }
+
+        if (i != 0) {
+            dst.commands.push_back(command(LEFT, 1, CARD_DBL));
+        }
+    }
+}
+
 static void
 emit_inc_counter(state &st,
                  struct commands &dst,
@@ -20,21 +61,27 @@ emit_inc_counter(state &st,
 {    
     int n = src->u.int_val;
     int d = n - st.val;
+    bool emitted = false;
     if (st.val == -1) {
-        /* 蛻晄悄蛟､ */
+        /* 初期値 */
         d = n;
         dst.commands.push_back(command(RIGHT, 1, CARD_ZERO));
     } else {
         if (d < 0) {
-            /* 繧ｫ繧ｦ繝ｳ繧ｿ繧呈綾縺呎婿豕輔′辟｡縺�縺ｮ縺ｧ繧ｨ繝ｩ繝ｼ繧定ｵｷ縺薙☆ */
+            /* カウンタを戻す方法が無いのでエラーを起こす */
             dst.commands.push_back(command(LEFT, 1, CARD_ZERO)); // raise error
             dst.commands.push_back(command(RIGHT, 1, CARD_ZERO));
             d = n;
+        } else if (d<bitcount_shift(n)) {
+            for (int i=0; i<d; i++) {
+                dst.commands.push_back(command(LEFT, 1, CARD_SUCC));
+            }
+            emitted = true;
         }
     }
 
-    for (int i=0; i<d; i++) {
-        dst.commands.push_back(command(LEFT, 1, CARD_SUCC));
+    if (!emitted) {
+        emit_bit_shift(dst, n);
     }
 
     st.val = n;

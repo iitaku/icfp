@@ -315,7 +315,7 @@ using namespace copy_kawaii;
 
 
 const char *progs[] = {
-    "attack (0)(1)(15)"
+    "attack (0)(1)(16)"
 };
 
 
