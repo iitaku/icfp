@@ -46,6 +46,7 @@ expand_sk(const expr *src,
     }
         break;
 
+    case expr::REF_STATIC_VAR:
     case expr::INTEGER:
         assert(0);
         break;

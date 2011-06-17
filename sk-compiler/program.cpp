@@ -17,8 +17,13 @@ struct lexval {
         DIGIT,
         LABEL,
         GOTO,
+        SET,
         SYM,
-        END
+        END,
+        PLUS,
+        MINUS,
+        EQ,
+        DOLLER
     } code;
 
     union {
@@ -114,12 +119,14 @@ lex(struct lexer *l)
             return l->lastval = lexval(lexval::RPAR);
 
         default:
-            if (isalpha(c)) {
+            if (isalpha(c) || c == '_') {
                 symbuf[0] = c;
                 sympos = 1;
                 while (1) {
                     c = lgetc(l);
-                    if (! isalpha(c)) {
+                    if (! (isalnum(c)
+                           || (c == '_')))
+                    {
                         lungetc(l, c);
 
                         symbuf[sympos] = '\0';
@@ -133,6 +140,9 @@ lex(struct lexer *l)
                             }
                             if (strcmp("end", symbuf) == 0) {
                                 return l->lastval = lexval(lexval::END);
+                            }
+                            if (strcmp("set", symbuf) == 0) {
+                                return l->lastval = lexval(lexval::SET);
                             }
 
                             return l->lastval = lexval::symval(strdup(symbuf));
@@ -160,6 +170,20 @@ lex(struct lexer *l)
 
                     symbuf[sympos++] = c;
                 }
+            }
+
+            switch (c) {
+            case '+':
+                return l->lastval = lexval(lexval::PLUS);
+            case '=':
+                return l->lastval = lexval(lexval::EQ);
+            case '-':
+                return l->lastval = lexval(lexval::MINUS);
+            case '$':
+                return l->lastval = lexval(lexval::DOLLER);
+
+            default:
+                break;
             }
 
             fprintf(stderr, "read unknown charactor = %c\n", c);
@@ -218,6 +242,21 @@ parse_expr(struct lexer *l,
             }
             break;
 
+        case lexval::DOLLER:
+            lex(l);
+            if (l->lastval.code != lexval::SYM) {
+                fprintf(stderr, "error near '$'\n");
+                assert(0);
+            }
+            cur = expr::ref_static_var(l->lastval.u.sym);
+            lex(l);
+            if (prev == NULL) {
+                prev = cur;
+            } else {
+                prev = expr::apply(prev, cur);
+            }
+            break;
+
         case lexval::EOL:
             if (! toplev) {
                 fprintf(stderr, "unmatch ();\n");
@@ -230,6 +269,10 @@ parse_expr(struct lexer *l,
             }
 
             return prev;
+
+        default:
+            fprintf(stderr, "??\n");
+            assert(0);
         }
     }
 }
@@ -239,6 +282,71 @@ static struct expr *
 parse_expr(lexer &l)
 {
     return parse_expr(&l, true);
+}
+
+static static_expr *
+static_term(lexer &l)
+{
+    static_expr *e;
+    switch (l.lastval.code) {
+    case lexval::DIGIT:
+        e = static_expr::const_int(l.lastval.u.digit_val);
+        lex(&l);
+        return e;
+
+    case lexval::DOLLER:
+        lex(&l);
+        if (l.lastval.code != lexval::SYM) {
+            fprintf(stderr, "unexpected token near $\n");
+            assert(0);
+        }
+        e = static_expr::var_ref(l.lastval.u.sym);
+        lex(&l);
+        return e;
+
+    default:
+        break;
+    }
+
+    fprintf(stderr, "expr error \n");
+    assert(0);
+}
+
+static static_expr *
+parse_static_expr(lexer &l,
+                  bool is_toplev)
+{
+    static_expr *e;
+
+    e = static_term(l);
+
+    while (1) {
+        enum static_expr::expr_code c;
+
+        switch (l.lastval.code) {
+        case lexval::PLUS:
+            c = static_expr::PLUS;
+            lex(&l);
+            break;
+
+        case lexval::MINUS:
+            c = static_expr::MINUS;
+            lex(&l);
+            break;
+
+        default:
+            return e;
+        }
+
+        static_expr *r = static_term(l);
+        e = static_expr::bin(c, e, r);
+    }
+}
+
+static struct static_expr *
+parse_static_expr(lexer &l)
+{
+    return parse_static_expr(l, true);
 }
 
 program
@@ -283,9 +391,32 @@ parse(const char *source,
             lex(&l);
             break;
 
+        case lexval::SET: {
+            lex(&l);
+            if (l.lastval.code != lexval::SYM) {
+                fprintf(stderr, "unexpected token near set\n");
+                assert(0);
+            }
+            char *symval = l.lastval.u.sym;
+            lex(&l);
+            if (l.lastval.code != lexval::EQ) {
+                fprintf(stderr, "unexpected token expected '='\n");
+                assert(0);
+            }
+            lex(&l);
+            struct static_expr *se = parse_static_expr(l);
+            s = stmt::set_var(symval, se);
+            if (l.lastval.code != lexval::EOL) {
+                fprintf(stderr, "EOL expected\n");
+                assert(0);
+            }
+            lex(&l);
+        }
+            break;
+
         case lexval::EOL:
             lex(&l);
-            break;
+            continue;
 
         case lexval::EOF_:
             goto quit;
@@ -306,8 +437,7 @@ static int
 lookup_label(program &prog,
              const char *src)
 {
-    int i;
-    for (int i=0; i<prog.stmts.size(); i++) {
+    for (unsigned int i=0; i<prog.stmts.size(); i++) {
         stmt *s = &prog.stmts[i];
         if ((s->code == stmt::LABEL) &&
             strcmp(s->u.label, src) == 0)
@@ -320,6 +450,25 @@ lookup_label(program &prog,
     assert(0);
 }
 
+static int
+eval_static_expr(program &prog,
+                 static_expr *e)
+{
+    switch (e->code) {
+    case static_expr::PLUS:
+        return eval_static_expr(prog, e->u.bin.l) +
+            eval_static_expr(prog, e->u.bin.r);
+    case static_expr::MINUS:
+        return eval_static_expr(prog, e->u.bin.l) -
+            eval_static_expr(prog, e->u.bin.r);
+
+    case static_expr::CONST_INT:
+        return e->u.val;
+
+    case static_expr::VARREF:
+        return prog.vars[e->u.var_name];
+    }
+}
 
 void
 run(program &prog)
@@ -335,7 +484,7 @@ run(program &prog)
             //fprintf(stderr, "orig = ");
             //dump_expr(e);
             //fprintf(stderr, "\n");
-            expr *iexpanded = expand_integer(e);
+            expr *iexpanded = expand_integer(prog, e);
             // fprintf(stderr, "expand integer = ");
             // dump_expr(iexpanded);
             // fprintf(stderr, "\n");
@@ -357,8 +506,13 @@ run(program &prog)
         }
             break;
 
+        case stmt::SET_VAR: {
+            int value = eval_static_expr(prog, stmts[pc].u.set_var.expr);
+            prog.vars[stmts[pc].u.set_var.var_name] = value;
+        }
+            break;
+
         case stmt::LABEL:
-            
             break;
 
         case stmt::GOTO:
@@ -383,6 +537,10 @@ dump_program(program &prog)
 
         case stmt::LABEL:
             fprintf(stderr, "label %s\n", s.u.label);
+            break;
+
+        case stmt::SET_VAR:
+            fprintf(stderr, "set (%s) = ...\n", s.u.set_var.var_name);
             break;
 
         case stmt::EXPR:

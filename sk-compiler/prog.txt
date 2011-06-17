@@ -1,13 +1,9 @@
+set xyzzy = 0
 label a
-attack (0)(0)(8192)
-attack (0)(0)(8192)
-attack (1)(0)(8192)
-attack (1)(0)(8192)
-attack (2)(1)(8192)
-attack (2)(1)(8192)
-attack (3)(1)(8192)
-attack (3)(1)(8192)
+
+set my_0 = $xyzzy + 1
+
+attack ($xyzzy)($my_0)(8192)
+attack ($xyzzy)($my_0)(8192)
+set xyzzy = $xyzzy + 1
 goto a
-
-
-

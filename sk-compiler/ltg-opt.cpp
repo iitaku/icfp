@@ -48,6 +48,10 @@ dump_expr(expr *e)
         fprintf(stderr, "<emit_inc %d> ", e->u.int_val);
         break;
 
+    case expr::REF_STATIC_VAR:
+        fprintf(stderr, "$%s ", e->u.ref_static_var_name);
+        break;
+
     }
 }
 

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+add_definitions(-Wall)
+
 project(sk-compiler)
 add_executable(ltg-opt 
   ltg-opt.cpp expand-integer.cpp expand-sk.cpp command.cpp compile.cpp

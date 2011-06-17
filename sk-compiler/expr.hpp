@@ -38,6 +38,7 @@ struct expr {
 
         /* virtual nodes */
         EMIT_INC_COUNTER,
+        REF_STATIC_VAR,
     } code;
 
     union {
@@ -46,6 +47,8 @@ struct expr {
             struct expr *f, *a;
         } apply;
         int int_val;
+
+        char *ref_static_var_name;
     }u;
 
     static struct expr *apply(struct expr *f,
@@ -80,6 +83,12 @@ struct expr {
         return new expr(ret);
     }
 
+    static struct expr *ref_static_var(char *var_name) {
+        struct expr ret;
+        ret.code = REF_STATIC_VAR;
+        ret.u.ref_static_var_name = var_name;
+        return new expr(ret);
+    }
 };
 
 void dump_expr(expr *e);
