@@ -22,6 +22,8 @@ struct lexval {
         END,
         PLUS,
         MINUS,
+        MUL,
+        DIV,
         EQ,
         DOLLER
     } code;
@@ -173,6 +175,10 @@ lex(struct lexer *l)
             }
 
             switch (c) {
+            case '*':
+                return l->lastval = lexval(lexval::MUL);
+            case '/':
+                return l->lastval = lexval(lexval::DIV);
             case '+':
                 return l->lastval = lexval(lexval::PLUS);
             case '=':
@@ -334,6 +340,16 @@ parse_static_expr(lexer &l,
             lex(&l);
             break;
 
+        case lexval::MUL:
+            c = static_expr::MUL;
+            lex(&l);
+            break;
+
+        case lexval::DIV:
+            c = static_expr::DIV;
+            lex(&l);
+            break;
+
         default:
             return e;
         }
@@ -458,6 +474,12 @@ eval_static_expr(program &prog,
     case static_expr::PLUS:
         return eval_static_expr(prog, e->u.bin.l) +
             eval_static_expr(prog, e->u.bin.r);
+    case static_expr::MUL:
+        return eval_static_expr(prog, e->u.bin.l) *
+            eval_static_expr(prog, e->u.bin.r);
+    case static_expr::DIV:
+        return eval_static_expr(prog, e->u.bin.l) /
+            eval_static_expr(prog, e->u.bin.r);
     case static_expr::MINUS:
         return eval_static_expr(prog, e->u.bin.l) -
             eval_static_expr(prog, e->u.bin.r);
@@ -468,6 +490,8 @@ eval_static_expr(program &prog,
     case static_expr::VARREF:
         return prog.vars[e->u.var_name];
     }
+
+    assert(0);
 }
 
 void

@@ -11,6 +11,8 @@ struct static_expr {
         VARREF,
         PLUS,
         MINUS,
+        MUL,
+        DIV,
         CONST_INT,
     } code;
 

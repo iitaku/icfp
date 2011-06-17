@@ -122,6 +122,7 @@ do_compile(compiler_state &st,
         break;
 
 
+    case expr::REF_STATIC_VAR:
     case expr::INTEGER: {
         fprintf(stderr, "invalid expr");
         assert(0);
