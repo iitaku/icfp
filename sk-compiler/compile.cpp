@@ -5,14 +5,6 @@
 
 namespace copy_kawaii {
 
-struct state {
-    int val;
-
-    state()
-        :val(-1)
-    {}
-};
-
 static int
 bitcount_shift(int val)
 {
@@ -20,7 +12,7 @@ bitcount_shift(int val)
     int max_bitpos = 0;
     int bit_count;
     /* 線形探索ひどい */
-    for (i=0; i<16; i++) {
+    for (i=0; i<24; i++) {
         if (val & (1<<i)) {
             max_bitpos = i;
             bit_count++;
@@ -37,7 +29,7 @@ emit_bit_shift(commands &dst, int val)
     int i = 0;
     int max_bitpos = 0;
     /* 線形探索ひどい */
-    for (i=0; i<16; i++) {
+    for (i=0; i<24; i++) {
         if (val & (1<<i)) {
             max_bitpos = i;
         }
@@ -55,7 +47,7 @@ emit_bit_shift(commands &dst, int val)
 }
 
 static void
-emit_inc_counter(state &st,
+emit_inc_counter(compiler_state &st,
                  struct commands &dst,
                  const expr *src)
 {    
@@ -67,12 +59,15 @@ emit_inc_counter(state &st,
         d = n;
         dst.commands.push_back(command(RIGHT, 1, CARD_ZERO));
     } else {
+        dst.commands.push_back(command(LEFT, 1, CARD_ZERO)); // raise error
+        dst.commands.push_back(command(RIGHT, 1, CARD_ZERO));
+
         if (d < 0) {
             /* カウンタを戻す方法が無いのでエラーを起こす */
             dst.commands.push_back(command(LEFT, 1, CARD_ZERO)); // raise error
             dst.commands.push_back(command(RIGHT, 1, CARD_ZERO));
             d = n;
-        } else if (d<bitcount_shift(n)) {
+        } else if (0 && d<bitcount_shift(n)) {
             for (int i=0; i<d; i++) {
                 dst.commands.push_back(command(LEFT, 1, CARD_SUCC));
             }
@@ -92,7 +87,7 @@ emit_inc_counter(state &st,
 
 
 static void
-do_compile(state &st,
+do_compile(compiler_state &st,
            struct commands &dst,
            const expr *src)
 {
@@ -106,13 +101,13 @@ do_compile(state &st,
         const expr *a = src->u.apply.a;
 
         if (f->code == expr::CARD) {
-            compile(dst, a);
+            compile(st, dst, a);
             dst.commands.push_back(command(LEFT, 0, f->u.card));
         } else if (a->code == expr::CARD) {
-            compile(dst, f);
+            compile(st, dst, f);
             dst.commands.push_back(command(RIGHT, 0, a->u.card));
         } else if (a->code == expr::EMIT_INC_COUNTER) {
-            compile(dst, f);
+            compile(st, dst, f);
             emit_inc_counter(st, dst, a);
         } else {
             fprintf(stderr, "invalid expr");
@@ -136,10 +131,10 @@ do_compile(state &st,
 }
 
 void
-compile(struct commands &dst,
+compile(compiler_state &st,
+        struct commands &dst,
         const expr *src)
 {
-    state st;
     do_compile(st, dst, src);
 }
 

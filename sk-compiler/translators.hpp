@@ -7,14 +7,23 @@
 
 namespace copy_kawaii {
 
-expr *expand_integer(struct commands &commands,
-                     const expr *src);
+expr *expand_integer(const expr *src);
 
-expr *expand_sk(struct commands &commands,
-                const expr *src,
+expr *expand_sk(const expr *src,
                 expr *head,
                 bool *change);
-void compile(struct commands &commands,
+
+struct compiler_state {
+    int val;
+
+    compiler_state()
+        :val(-1)
+    {}
+};
+
+
+void compile(compiler_state &st,
+             struct commands &commands,
              const expr *src);
 
 }

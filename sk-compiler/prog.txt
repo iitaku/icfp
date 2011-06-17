@@ -1,0 +1,13 @@
+label a
+attack (0)(0)(8192)
+attack (0)(0)(8192)
+attack (1)(0)(8192)
+attack (1)(0)(8192)
+attack (2)(1)(8192)
+attack (2)(1)(8192)
+attack (3)(1)(8192)
+attack (3)(1)(8192)
+goto a
+
+
+

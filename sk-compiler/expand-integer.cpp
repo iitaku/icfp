@@ -6,13 +6,12 @@ namespace copy_kawaii {
 
 
 static expr *
-f(commands &dst,
-  const expr *e)
+f(const expr *e)
 {
     switch (e->code) {
     case expr::APPLY:
-        return expr::apply(f(dst, e->u.apply.f),
-                           f(dst, e->u.apply.a));
+        return expr::apply(f(e->u.apply.f),
+                           f(e->u.apply.a));
 
     case expr::CARD:
         return expr::card(e->u.card);
@@ -43,10 +42,9 @@ f(commands &dst,
 }
 
 expr *
-expand_integer(struct commands &commands,
-               const expr *src)
+expand_integer(const expr *src)
 {
-    return f(commands, src);
+    return f(src);
 }
 
 }

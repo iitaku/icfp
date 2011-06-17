@@ -105,7 +105,8 @@ write_line(command const &com) {
         }
         fflush(stderr);
     }
-    sleep(1);
+
+    usleep(100000);
 }
 
 }

@@ -7,8 +7,7 @@
 namespace copy_kawaii {
 
 expr *
-expand_sk(struct commands &commands,
-          const expr *src,
+expand_sk(const expr *src,
           expr *head,
           bool *change)
 {
@@ -24,17 +23,17 @@ expand_sk(struct commands &commands,
             if (src_f->code == expr::CARD) {
                 head = expr::card(src_f->u.card);
             } else {
-                head = expand_sk(commands, src_f, NULL, change);
+                head = expand_sk(src_f, NULL, change);
             }
 
-            return expand_sk(commands, src_a, head, change);
+            return expand_sk(src_a, head, change);
         } else {
             if (src_f->code == expr::CARD) {
                 expr *sk = expr::apply(expr::card(CARD_S),
                                        expr::apply(expr::card(CARD_K),
                                                    head));
                 sk = expr::apply(sk, expr::card(src_f->u.card));
-                return expand_sk(commands, src_a, sk, change);
+                return expand_sk(src_a, sk, change);
             } else {
                 assert(0);
             }
