@@ -1,0 +1,46 @@
+式をSKに変換
+
+ltg-opt.cpp に書いてある
+const char *progs[] = {
+    "attack (0)(1)(15)"
+};
+
+を
+
+expand integer = (((attack zero ) (succ zero ) ) (get (succ <emit_inc 15> ) ) )  <- 整数の展開
+expand sk = (((S (K ((S (K (((S (K (attack zero ) ) ) succ ) zero ) ) ) get ) ) ) succ ) <emit_inc 15> )  <- SKの展開
+
+↓実行されるコード
+right slot=0 card=zero
+left slot=0 card=attack
+left slot=0 card=K
+left slot=0 card=S
+right slot=0 card=succ
+right slot=0 card=zero
+left slot=0 card=K
+left slot=0 card=S
+right slot=0 card=get
+left slot=0 card=K
+left slot=0 card=S
+right slot=0 card=succ
+right slot=1 card=zero
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+left slot=1 card=succ
+right slot=0 card=zero
+
+とかやります
+
+リークしてるけど負けないで!!
