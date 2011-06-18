@@ -25,7 +25,8 @@ struct compiler_state {
 
 void compile(compiler_state &st,
              struct commands &commands,
-             const expr *src);
+             const expr *src,
+             int prog_slot);
 
 }
 

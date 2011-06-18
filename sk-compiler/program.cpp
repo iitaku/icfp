@@ -1,10 +1,13 @@
 #include "tool.hpp"
 #include "program.hpp"
 #include "translators.hpp"
+#include "slots.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#define MAX_SLOT 32
 
 namespace copy_kawaii {
 
@@ -34,7 +37,9 @@ struct lexval {
         LE,
         GE,
         EXCLAM,
-        DOLLER
+        DOLLER,
+        AT,
+        SET_SLOT
     } code;
 
     union {
@@ -158,6 +163,9 @@ lex(struct lexer *l)
                             if (strcmp("set", symbuf) == 0) {
                                 return l->lastval = lexval(lexval::SET);
                             }
+                            if (strcmp("set_slot", symbuf) == 0) {
+                                return l->lastval = lexval(lexval::SET_SLOT);
+                            }
 
                             return l->lastval = lexval::symval(strdup(symbuf));
 
@@ -241,6 +249,8 @@ lex(struct lexer *l)
                 return l->lastval = lexval(lexval::MINUS);
             case '$':
                 return l->lastval = lexval(lexval::DOLLER);
+            case '@':
+                return l->lastval = lexval(lexval::AT);
 
             default:
                 break;
@@ -309,6 +319,21 @@ parse_expr(struct lexer *l,
                 assert(0);
             }
             cur = expr::ref_static_var(l->lastval.u.sym);
+            lex(l);
+            if (prev == NULL) {
+                prev = cur;
+            } else {
+                prev = expr::apply(prev, cur);
+            }
+            break;
+
+        case lexval::AT:
+            lex(l);
+            if (l->lastval.code != lexval::DIGIT) {
+                fprintf(stderr, "error near '@'\n");
+                assert(0);
+            }
+            cur = expr::get_slot(l->lastval.u.digit_val);
             lex(l);
             if (prev == NULL) {
                 prev = cur;
@@ -446,6 +471,19 @@ parse_static_expr(lexer &l)
     return parse_static_expr(l, true);
 }
 
+static void
+expect(lexer &l,
+       const char *expect,
+       enum lexval::lcode e)
+{
+    if (l.lastval.code != e) {
+        fprintf(stderr, "expect %s\n", expect);
+        assert(0);
+    }
+    lex(&l);
+}
+
+
 program
 parse(const char *source,
       int source_len)
@@ -528,6 +566,31 @@ parse(const char *source,
             lex(&l);
         }
             break;
+        case lexval::SET_SLOT: {
+            lex(&l);
+
+            expect(l, "@", lexval::AT);
+
+            if (l.lastval.code != lexval::DIGIT) {
+                fprintf(stderr, "expect number\n");
+                assert(0);
+            }
+            int slot_idx = l.lastval.u.digit_val;
+            lex(&l);
+            if (l.lastval.code != lexval::EQ) {
+                fprintf(stderr, "unexpected token expected '='\n");
+                assert(0);
+            }
+            lex(&l);
+            struct expr *e = parse_expr(l);
+            s = stmt::set_slot(slot_idx, e);
+            if (l.lastval.code != lexval::EOL) {
+                fprintf(stderr, "EOL expected\n");
+                assert(0);
+            }
+            lex(&l);
+        }
+            break;
 
         case lexval::EOL:
             lex(&l);
@@ -597,6 +660,43 @@ eval_static_expr(program &prog,
     assert(0);
 }
 
+static void
+compile_expr(compiler_state &st,
+             struct commands &coms,
+             program &prog,
+             expr *e,
+             int prog_slot)
+{
+    bool dump = true;
+    if (dump) {
+        fprintf(stderr, "orig = ");
+        dump_expr(e);
+        fprintf(stderr, "\n");
+    }
+    expr *iexpanded = expand_integer(prog, e);
+
+    if (dump) {
+        fprintf(stderr, "expand integer = ");
+        dump_expr(iexpanded);
+        fprintf(stderr, "\n");
+    }
+    expr *sk = iexpanded;
+    bool change = false;
+    sk = expand_sk(sk, NULL, &change);
+    if (dump) {
+        fprintf(stderr, "expand sk = ");
+        dump_expr(sk);
+        fprintf(stderr, "\n");
+    }
+    compile(st,coms, sk, prog_slot);
+
+    if (dump) {
+        dump_commands(coms);
+    }
+}
+
+
+
 void
 run(program &prog)
 {
@@ -612,25 +712,8 @@ run(program &prog)
 
         switch (stmts[pc].code) {
         case stmt::EXPR: {
-            expr *e = stmts[pc].u.e;
-            //fprintf(stderr, "orig = ");
-            //dump_expr(e);
-            //fprintf(stderr, "\n");
-            expr *iexpanded = expand_integer(prog, e);
-            // fprintf(stderr, "expand integer = ");
-            // dump_expr(iexpanded);
-            // fprintf(stderr, "\n");
-            expr *sk = iexpanded;
-            bool change = false;
-            sk = expand_sk(sk, NULL, &change);
-            // fprintf(stderr, "expand sk = ");
-            // dump_expr(sk);
-            // fprintf(stderr, "\n");
-
             struct commands commands;
-            compile(st,commands, sk);
-            //dump_commands(commands);
-
+            compile_expr(st, commands, prog, stmts[pc].u.e, SLOT_PROGRAM);
             for (unsigned int i=0; i<commands.commands.size(); i++) {
                 write_line(commands.commands[i]);
                 get_command_line(from_opponent);
@@ -655,6 +738,15 @@ run(program &prog)
             if (eval_static_expr(prog, stmts[pc].u.goto_if.expr)) {
                 pc = lookup_label(prog, stmts[pc].u.goto_if.label);
                 continue;
+            }
+            break;
+
+        case stmt::SET_SLOT:
+            struct commands commands;
+            compile_expr(st, commands, prog, stmts[pc].u.set_slot.val, stmts[pc].u.set_slot.slot);
+            for (unsigned int i=0; i<commands.commands.size(); i++) {
+                write_line(commands.commands[i]);
+                get_command_line(from_opponent);
             }
             break;
         }
@@ -684,6 +776,12 @@ dump_program(program &prog)
 
         case stmt::SET_VAR:
             fprintf(stderr, "set (%s) = ...\n", s.u.set_var.var_name);
+            break;
+
+        case stmt::SET_SLOT:
+            fprintf(stderr, "set slot @%d = ", s.u.set_slot.slot);
+            dump_expr(s.u.set_slot.val);
+            fprintf(stderr, "\n");
             break;
 
         case stmt::EXPR:

@@ -14,8 +14,7 @@ expand_integer(int n)
                            expr::card(CARD_ZERO));
     } else {
         return expr::apply(expr::card(CARD_GET),
-                           expr::apply(expr::card(CARD_SUCC),
-                                       expr::emit_inc_counter(n)));
+                           expr::emit_inc_counter(n));
     }
 }
 
@@ -41,6 +40,11 @@ f(program &prog, const expr *e)
         return expand_integer(val);
     }
         break;
+
+    case expr::GET_SLOT:
+        return expr::apply(expr::card(CARD_GET),
+                           expr::apply(expr::card(CARD_GET),
+                                       expr::emit_inc_counter(e->u.slot)));
 
     case expr::EMIT_INC_COUNTER: {
         assert(0);

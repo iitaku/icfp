@@ -1,7 +1,7 @@
 project(sk-compiler)
 cmake_minimum_required(VERSION 2.8)
 
-add_definitions(-Wall)
+add_definitions(-Wall -Werror)
 
 set(SOURCE ltg-opt.cpp 
            expand-integer.cpp 

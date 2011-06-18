@@ -17,6 +17,7 @@ struct expr {
         /* virtual nodes */
         EMIT_INC_COUNTER,
         REF_STATIC_VAR,
+        GET_SLOT
     } code;
 
     union {
@@ -25,6 +26,7 @@ struct expr {
             struct expr *f, *a;
         } apply;
         int int_val;
+        int slot;
 
         char *ref_static_var_name;
     }u;
@@ -65,6 +67,13 @@ struct expr {
         struct expr ret;
         ret.code = REF_STATIC_VAR;
         ret.u.ref_static_var_name = var_name;
+        return new expr(ret);
+    }
+
+    static struct expr *get_slot(int slot) {
+        struct expr ret;
+        ret.code = GET_SLOT;
+        ret.u.slot = slot;
         return new expr(ret);
     }
 };

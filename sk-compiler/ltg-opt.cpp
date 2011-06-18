@@ -39,6 +39,10 @@ dump_expr(expr *e)
         fprintf(stderr, "$%s ", e->u.ref_static_var_name);
         break;
 
+    case expr::GET_SLOT:
+        fprintf(stderr, "@%d ", e->u.slot);
+        break;
+
     }
 }
 

@@ -1,9 +1,11 @@
+set_slot @9 = attack 100 100
+
 set xyzzy = 0
 label a
 
 set my_0 = $xyzzy + 1
 
-attack ($xyzzy)($my_0)(8192)
-attack ($xyzzy)($my_0)(8192)
+@9 2
+
 set xyzzy = $xyzzy + 1
 goto a
