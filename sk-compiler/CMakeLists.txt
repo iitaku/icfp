@@ -20,7 +20,7 @@ add_executable(${EXEC_NAME} ${SOURCE})
 
 set(PKG_DIR ${EXEC_NAME}.d)
 
-add_definitions("-D WITH_SLEEP")
+#add_definitions("-D WITH_SLEEP")
 
 add_custom_target(package 
                   COMMAND rm -rf ${PKG_DIR} 

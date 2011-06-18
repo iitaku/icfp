@@ -64,7 +64,7 @@ char source[1024*1024];
 int
 main(int argc, char **argv)
 {
-    const char *prog_file = "prog/prog.txt";
+    const char *prog_file = "prog.txt";
     init();
 
     int opt;
