@@ -4,31 +4,9 @@
 #include <map>
 #include <string>
 
+#include "tool.hpp"
+
 namespace copy_kawaii {
-
-enum card_code {
-    CARD_I,
-    CARD_ZERO,
-    CARD_SUCC,
-    CARD_DBL,
-    CARD_GET,
-    CARD_PUT,
-    CARD_S,
-    CARD_K,
-    CARD_INC,
-    CARD_DEC,
-    CARD_ATTACK,
-    CARD_HELP,
-    CARD_COPY,
-    CARD_REVIVE,
-    CARD_ZOMBIE
-};
-
-typedef std::map<std::string, enum card_code> name_to_card_t;
-extern name_to_card_t name_to_card;
-
-const char *get_card_name(enum card_code cc);
-
 
 struct expr {
     enum expr_code{

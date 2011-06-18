@@ -1,3 +1,4 @@
+#include "expr.hpp"
 #include "command.hpp"
 #include <stdio.h>
 #include <string.h>
@@ -50,7 +51,7 @@ static enum card_code
 read_card()
 {
     read_line(from_opponent);
-    return name_to_card[line];
+    return get_card_code(line);
 }
 
 struct command
