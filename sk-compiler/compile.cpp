@@ -125,6 +125,9 @@ do_compile(compiler_state &st,
     }
         break;
 
+    case expr::CLEAR:
+        dst.commands.push_back(command(LEFT, prog_slot, CARD_PUT));
+        break;
 
     case expr::GET_SLOT:
     case expr::REF_STATIC_VAR:

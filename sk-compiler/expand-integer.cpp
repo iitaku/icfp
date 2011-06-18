@@ -46,6 +46,9 @@ f(program &prog, const expr *e)
                            expr::apply(expr::card(CARD_GET),
                                        expr::emit_inc_counter(e->u.slot)));
 
+    case expr::CLEAR:
+        return expr::clear();
+
     case expr::EMIT_INC_COUNTER: {
         assert(0);
     }

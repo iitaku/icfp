@@ -43,6 +43,9 @@ dump_expr(expr *e)
         fprintf(stderr, "@%d ", e->u.slot);
         break;
 
+    case expr::CLEAR:
+        fprintf(stderr, "clear ");
+        break;
     }
 }
 

@@ -17,7 +17,8 @@ struct expr {
         /* virtual nodes */
         EMIT_INC_COUNTER,
         REF_STATIC_VAR,
-        GET_SLOT
+        GET_SLOT,
+        CLEAR
     } code;
 
     union {
@@ -74,6 +75,12 @@ struct expr {
         struct expr ret;
         ret.code = GET_SLOT;
         ret.u.slot = slot;
+        return new expr(ret);
+    }
+
+    static struct expr *clear() {
+        struct expr ret;
+        ret.code = CLEAR;
         return new expr(ret);
     }
 };
