@@ -1,3 +1,4 @@
+#include "tool.hpp"
 #include "program.hpp"
 #include "translators.hpp"
 #include <stdio.h>
@@ -132,8 +133,8 @@ lex(struct lexer *l)
                         lungetc(l, c);
 
                         symbuf[sympos] = '\0';
-                        name_to_card_t::iterator i = name_to_card.find(symbuf);
-                        if (i == name_to_card.end()) {
+                        enum card_code code = get_card_code(symbuf);
+                        if (CARD_UNKNOWN == code) {
                             if (strcmp("goto", symbuf) == 0) {
                                 return l->lastval = lexval(lexval::GOTO);
                             }
@@ -153,7 +154,7 @@ lex(struct lexer *l)
                             abort();
                         }
 
-                        return l->lastval = lexval(i->second);
+                        return l->lastval = lexval(code);
                     }
 
                     symbuf[sympos++] = c;

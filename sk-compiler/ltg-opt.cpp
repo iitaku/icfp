@@ -11,19 +11,6 @@
 #include "program.hpp"
 
 namespace copy_kawaii {
-name_to_card_t name_to_card;
-
-const char *card_to_name_table[] = {
-    "I", "zero", "succ", "dbl", "get", "put",
-    "S", "K", "inc", "dec", "attack",
-    "help", "copy", "revive", "zombie"
-};
-
-inline const char *
-get_card_name(enum card_code cc)
-{
-    return card_to_name_table[(int)cc];
-}
 
 void
 dump_expr(expr *e)
@@ -59,22 +46,6 @@ void init()
 {
     from_opponent = stdin;
     to_opponent = stdout;
-
-    name_to_card["I"] = CARD_I;
-    name_to_card["zero"] = CARD_ZERO;
-    name_to_card["succ"] = CARD_SUCC;
-    name_to_card["dbl"] = CARD_DBL;
-    name_to_card["get"] = CARD_GET;
-    name_to_card["put"] = CARD_PUT;
-    name_to_card["S"] = CARD_S;
-    name_to_card["K"] = CARD_K;
-    name_to_card["inc"] = CARD_INC;
-    name_to_card["dec"] = CARD_DEC;
-    name_to_card["attack"] = CARD_ATTACK;
-    name_to_card["help"] = CARD_HELP;
-    name_to_card["copy"] = CARD_COPY;
-    name_to_card["revive"] = CARD_REVIVE;
-    name_to_card["zombie"] = CARD_ZOMBIE;
 }
 
 program
