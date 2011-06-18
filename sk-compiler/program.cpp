@@ -416,11 +416,25 @@ parse_expr(lexer &l)
 }
 
 expr *
-parse_expr(const char *src)
+parse_expr(const char *src,
+           CompileParam const &cp)
 {
     struct lexer l(src, strlen(src));
     lex(&l);
-    return parse_expr(l);
+
+    expr *ret = parse_expr(l);
+
+    if (cp.ref_prev_val) {
+        if (cp.ref_prev_lr == LEFT) {
+            return expr::apply(ret,
+                               expr::ref_prev_val());
+        } else {
+            return expr::apply(expr::ref_prev_val(),
+                               ret);
+        }
+    } else {
+        return ret;
+    }
 }
 
 static static_expr *parse_static_expr(lexer &l,

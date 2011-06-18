@@ -82,7 +82,7 @@ do_compile(commands &dst,
 {
     switch (src->code) {
     case expr::CARD:
-        dst.push_back(command(cp.innermost_lr, cp.prog_slot, src->u.card));
+        dst.push_back(command(RIGHT, cp.prog_slot, src->u.card));
         break;
 
     case expr::APPLY: {
@@ -112,6 +112,10 @@ do_compile(commands &dst,
 
     case expr::DIRECT_INT: {
         direct_int(dst, src, cp.prog_slot);
+    }
+        break;
+
+    case expr::REF_PREV_VAL: {
     }
         break;
 

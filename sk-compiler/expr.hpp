@@ -8,6 +8,8 @@
 
 namespace copy_kawaii {
 
+struct CompileParam;
+
 struct expr {
     enum expr_code{
         APPLY,
@@ -19,7 +21,8 @@ struct expr {
         DIRECT_INT,
         REF_STATIC_VAR,
         GET_SLOT,
-        CLEAR
+        CLEAR,
+        REF_PREV_VAL
     } code;
 
     union {
@@ -91,10 +94,16 @@ struct expr {
         ret.code = CLEAR;
         return new expr(ret);
     }
+
+    static struct expr *ref_prev_val() {
+        struct expr ret;
+        ret.code = REF_PREV_VAL;
+        return new expr(ret);
+    }
 };
 
 void dump_expr(expr *e);
-expr *parse_expr(const char *src);
+expr *parse_expr(const char *src, CompileParam const &cp);
 
 
 
