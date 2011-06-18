@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 
+#include "events.hpp"
+
 namespace copy_kawaii {
 
 const int N_SLOTS = 256;
@@ -34,8 +36,8 @@ public:
 	 * @param[in] method_  card type
 	 * @param[in] ans_     set number to card (number card only)
 	 */
-	Card(const std::string method_);
-	Card(const std::string method_, int ans_);
+	Card(const std::string& method_);
+	Card(const std::string& method_, int ans_);
 	Card(const Card& card) {
 		method = card.method;
 		cards = card.cards;
@@ -69,6 +71,8 @@ private:
 	int type;
 
 public:
+	static event_list_t event;
+
 	// count cards (not implement yet)
 	int cnt;
 	// vitality
@@ -90,7 +94,7 @@ public:
 	 * @param[in] card_    card
 	 * @param[in] apply_   left application (1) or right application (2)
 	 */
-	void set(Card card, int apply);
+	event_list_t set(Card card, int apply);
 };
 
 // proponent and opponents' slots

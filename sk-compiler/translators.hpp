@@ -5,6 +5,7 @@
 #include "expr.hpp"
 #include "command.hpp"
 #include "program.hpp"
+#include "virtual-slot.hpp"
 
 namespace copy_kawaii {
 
@@ -24,6 +25,17 @@ struct CompileParam {
          prog_slot(prog_slot),
          ref_prev_val(ref_prev_val)
     {}
+
+    CompileParam(enum lr_code lr,
+                 const VSlot &imm,
+                 const VSlot &prog,
+                 bool ref_prev_val)
+        :ref_prev_lr(lr),
+         imm_slot(imm.slot),
+         prog_slot(prog.slot),
+         ref_prev_val(ref_prev_val)
+    {}
+
 };
 
 expr *expand_integer(var_map_t &prog, const expr *src,

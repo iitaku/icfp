@@ -49,6 +49,9 @@ dump_expr(expr *e)
     case expr::GET_SLOT:
         fprintf(stderr, "@%d ", e->u.slot);
         break;
+    case expr::GET_VSLOT:
+        fprintf(stderr, "*%s ", e->u.get_vslot_name);
+        break;
 
     case expr::CLEAR:
         fprintf(stderr, "clear ");
@@ -100,5 +103,6 @@ main(int argc, char **argv)
 
     //zombie_help();
     //demo_left();
-    demo_ref_prev_val();
+    //demo_ref_prev_val();
+    demo_vslot();
 }

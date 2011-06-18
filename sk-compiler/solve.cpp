@@ -1,7 +1,7 @@
 /* -*- tab-width: 4 ; indent-tabs-mode: t -*- */
 
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include "solve.hpp"
 
 namespace copy_kawaii {
@@ -10,7 +10,9 @@ using namespace std;
 
 static bool is_zombie_world = false;
 
-Card::Card(const std::string method_)
+event_list_t Slot::event;
+
+Card::Card(const std::string& method_)
 {
 	method = method_;
 	is_number = false;
@@ -27,7 +29,7 @@ Card::Card(const std::string method_)
 	}
 }
 
-Card::Card(const std::string method_, int ans_)
+Card::Card(const std::string& method_, int ans_)
 {
 	method = method_;
 	if (method != "number") {
@@ -75,7 +77,7 @@ bool Card::set(Card& card, int type_)
 				// y <- g x
 				cards[1].set(cards[2], type);
 				// z <- h y
-				cards[0].set(cards[1], type);
+				if (!cards[0].set(cards[1], type));
 
 				// return z
 				Card c(cards[0]);
@@ -105,11 +107,18 @@ bool Card::set(Card& card, int type_)
 				int jj = cards[1].ans;
 				int x;
 				if (cards[2].func(x, type)) {
+					if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
+						cerr << "Error: attack: 0 <= index <= 255: " << ii << ", " << jj << endl;
+						return false;
+					}
 					int nn = x;
 					// v[i] <- v[i] - n
 					if (type == 0) {
 						pro[ii].v -= nn;
-						if (pro[ii].v < 0) pro[ii].v = 0;
+						if (pro[ii].v <= 0) {
+							pro[ii].v = 0;
+							Slot::event.push_back(Event::dead(Event::PROP_DEAD, ii));
+						}
 					} else {
 						opp[ii].v -= nn;
 						if (opp[ii].v < 0) opp[ii].v = 0;
@@ -120,7 +129,10 @@ bool Card::set(Card& card, int type_)
 						if (opp[N_SLOTS-jj-1].v < 0) opp[N_SLOTS-jj-1].v = 0;
 					} else {
 						pro[N_SLOTS-jj-1].v -= nn * 9 / 10;
-						if (pro[N_SLOTS-jj-1].v < 0) pro[N_SLOTS-jj-1].v = 0;
+						if (pro[N_SLOTS-jj-1].v <= 0) {
+							pro[N_SLOTS-jj-1].v = 0;
+							Slot::event.push_back(Event::dead(Event::PROP_DEAD, N_SLOTS-jj-1));
+						}
 					}
 
 					// return I
@@ -148,11 +160,18 @@ bool Card::set(Card& card, int type_)
 				int jj = cards[1].ans;
 				int x;
 				if (cards[2].func(x, type)) {
+					if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
+						cerr << "Error: help: 0 <= index <= 255: " << ii << ", " << jj << endl;
+						return false;
+					}
 					int nn = x;
 					// v[i] <- v[i] - n
 					if (type == 0) {
 						pro[ii].v -= nn;
-						if (pro[ii].v < 0) pro[ii].v = 0;
+						if (pro[ii].v <= 0) {
+							pro[ii].v = 0;
+							Slot::event.push_back(Event::dead(Event::PROP_DEAD, ii));
+						}
 					} else {
 						opp[ii].v -= nn;
 						if (opp[ii].v < 0) opp[ii].v = 0;
@@ -203,6 +222,8 @@ bool Card::set(Card& card, int type_)
 				// y <- f[i]
 				// return y
 				*this = (type == 0 ? pro[card.ans].root : opp[card.ans].root);
+				//Card c(type == 0 ? pro[card.ans].root : opp[card.ans].root);
+				//*this = c;
 			} else {
 				cards.push_back(card);
 			}
@@ -245,11 +266,11 @@ bool Card::set(Card& card, int type_)
 			return true;
 
 		} else if (method == "inc") {
-			cards.push_back(card);
 			////////////////////////////////////////////////////////////////////
 			// inc i
 			//   v[i] <- v[i] + 1
 			//   return I
+			cards.push_back(card);
 			if (cards.size() == n) {
 				int x;
 				if (cards[0].func(x, type)) {
@@ -261,6 +282,8 @@ bool Card::set(Card& card, int type_)
 						} else {
 							if (type == 0 && opp[x].v > 0 && opp[x].v < 65535) opp[x].v--;
 							else if (type == 1 && pro[x].v > 0 && pro[x].v < 65535) pro[x].v--;
+							if (pro[x].v <= 0)
+								Slot::event.push_back(Event::dead(Event::PROP_DEAD, x));
 						}
 					} else
 						cerr << "Error: inc: exceeded limit: " << x << endl;
@@ -288,6 +311,8 @@ bool Card::set(Card& card, int type_)
 						if (!is_zombie_world) {
 							if (type == 0 && opp[N_SLOTS-x-1].v > 0) opp[N_SLOTS-x-1].v--;
 							else if (type == 1 && pro[N_SLOTS-x-1].v > 0) pro[N_SLOTS-x-1].v--;
+							if (pro[N_SLOTS-x-1].v <= 0)
+								Slot::event.push_back(Event::dead(Event::PROP_DEAD, N_SLOTS-x-1));
 						} else {
 							if (type == 0 && pro[N_SLOTS-x-1].v > 0) pro[N_SLOTS-x-1].v++;
 							else if (type == 1 && opp[N_SLOTS-x-1].v > 0) opp[N_SLOTS-x-1].v++;
@@ -312,8 +337,11 @@ bool Card::set(Card& card, int type_)
 
 			// y <- f'[i]
 			// return y
-			if (card.is_number) *this = (type == 0 ? opp[card.ans].root : pro[card.ans].root);
-			else cards.push_back(card);
+			if (card.is_number) {
+				*this = (type == 0 ? opp[card.ans].root : pro[card.ans].root);
+				//Card c(type == 0 ? opp[card.ans].root : pro[card.ans].root);
+				//*this = c;
+			} else cards.push_back(card);
 			return true;
 
 		} else if (method == "revive") {
@@ -396,10 +424,14 @@ bool Card::set(Card& card, int type_)
 			if (method == "get") {
 				if (cards[n-1].is_number) {
 					*this = (type == 0 ? pro[cards[n-1].ans].root : opp[cards[n-1].ans].root);
+					//Card c(type == 0 ? pro[cards[n-1].ans].root : opp[cards[n-1].ans].root);
+					//*this = c;
 				}
 			} else if (method == "copy") {
 				if (cards[n-1].is_number) {
 					*this = (type == 0 ? opp[cards[n-1].ans].root : pro[cards[n-1].ans].root);
+					//Card c(type == 0 ? opp[cards[n-1].ans].root : pro[cards[n-1].ans].root);
+					//*this = c;
 				}
 			} else if (method == "revive") {
 				if (cards[n-1].is_number) {
@@ -428,14 +460,20 @@ bool Card::set(Card& card, int type_)
 						if (!is_zombie_world) {
 							if (type == 0) {
 								pro[ii].v -= nn;
-								if (pro[ii].v < 0) pro[ii].v = 0;
+								if (pro[ii].v <= 0) {
+									pro[ii].v = 0;
+									Slot::event.push_back(Event::dead(Event::PROP_DEAD, ii));
+								}
 								opp[N_SLOTS-jj-1].v -= nn * 9 / 10;
 								if (opp[N_SLOTS-jj-1].v < 0) opp[N_SLOTS-jj-1].v = 0;
 							} else {
 								opp[ii].v -= nn;
 								if (opp[ii].v < 0) opp[ii].v = 0;
 								pro[N_SLOTS-jj-1].v -= nn * 9 / 10;
-								if (pro[N_SLOTS-jj-1].v < 0) pro[N_SLOTS-jj-1].v = 0;
+								if (pro[N_SLOTS-jj-1].v <= 0) {
+									pro[N_SLOTS-jj-1].v = 0;
+									Slot::event.push_back(Event::dead(Event::PROP_DEAD, N_SLOTS-jj-1));
+								}
 							}
 						} else {
 							if (type == 0) {
@@ -463,11 +501,18 @@ bool Card::set(Card& card, int type_)
 					int jj = cards[1].ans;
 					int x;
 					if (cards[2].func(x, type)) {
+						if (ii < 0 || ii >= N_SLOTS || jj < 0 || ii >= N_SLOTS) {
+							cerr << "Error: help: 0 <= index <= 255: " << ii << ", " << jj << endl;
+							return false;
+						}
 						int nn = x;
 						if (!is_zombie_world) {
 							if (type == 0) {
 								pro[ii].v -= nn;
-								if (pro[ii].v < 0) pro[ii].v = 0;
+								if (pro[ii].v <= 0) {
+									pro[ii].v = 0;
+									Slot::event.push_back(Event::dead(Event::PROP_DEAD, ii));
+								}
 								pro[jj].v += nn * 11 / 10;
 								if (pro[jj].v > 65535) pro[jj].v = 65535;
 							} else {
@@ -484,9 +529,15 @@ bool Card::set(Card& card, int type_)
 								if (opp[jj].v < 0) opp[jj].v = 0;
 							} else {
 								pro[ii].v -= nn;
-								if (pro[ii].v < 0) pro[ii].v = 0;
+								if (pro[ii].v <= 0) {
+									pro[ii].v = 0;
+									Slot::event.push_back(Event::dead(Event::PROP_DEAD, ii));
+								}
 								pro[jj].v -= nn * 11 / 10;
-								if (pro[jj].v < 0) pro[jj].v = 0;
+								if (pro[jj].v <= 0) {
+									pro[jj].v = 0;
+									Slot::event.push_back(Event::dead(Event::PROP_DEAD, jj));
+								}
 							}
 						}
 
@@ -548,8 +599,10 @@ Slot::~Slot()
 {
 }
 
-void Slot::set(Card card, int apply)
+event_list_t Slot::set(Card card, int apply)
 {
+	event.clear();
+
 	if (apply == 1) {
 		if (card.set(root, type))
 			root = card;
@@ -561,6 +614,8 @@ void Slot::set(Card card, int apply)
 	} else {
 		cerr << "Error: invalid apply type: " << apply << endl;
 	}
+
+	return event;
 }
 
 // proponent and opponents' slots
