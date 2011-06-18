@@ -1,7 +1,7 @@
 /* -*- tab-width: 4 ; indent-tabs-mode: t -*- */
 
 #include <iostream>
-#include <stdio.h>
+#include <cstdio>
 #include "solve.hpp"
 
 namespace copy_kawaii {
@@ -10,7 +10,7 @@ using namespace std;
 
 static bool is_zombie_world = false;
 
-Card::Card(const std::string method_)
+Card::Card(const std::string& method_)
 {
 	method = method_;
 	is_number = false;
@@ -27,7 +27,7 @@ Card::Card(const std::string method_)
 	}
 }
 
-Card::Card(const std::string method_, int ans_)
+Card::Card(const std::string& method_, int ans_)
 {
 	method = method_;
 	if (method != "number") {
@@ -75,7 +75,7 @@ bool Card::set(Card& card, int type_)
 				// y <- g x
 				cards[1].set(cards[2], type);
 				// z <- h y
-				cards[0].set(cards[1], type);
+				if (!cards[0].set(cards[1], type));
 
 				// return z
 				Card c(cards[0]);
@@ -105,6 +105,10 @@ bool Card::set(Card& card, int type_)
 				int jj = cards[1].ans;
 				int x;
 				if (cards[2].func(x, type)) {
+					if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
+						cerr << "Error: attack: 0 <= index <= 255: " << ii << ", " << jj << endl;
+						return false;
+					}
 					int nn = x;
 					// v[i] <- v[i] - n
 					if (type == 0) {
@@ -148,6 +152,10 @@ bool Card::set(Card& card, int type_)
 				int jj = cards[1].ans;
 				int x;
 				if (cards[2].func(x, type)) {
+					if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
+						cerr << "Error: help: 0 <= index <= 255: " << ii << ", " << jj << endl;
+						return false;
+					}
 					int nn = x;
 					// v[i] <- v[i] - n
 					if (type == 0) {
@@ -203,6 +211,8 @@ bool Card::set(Card& card, int type_)
 				// y <- f[i]
 				// return y
 				*this = (type == 0 ? pro[card.ans].root : opp[card.ans].root);
+				//Card c(type == 0 ? pro[card.ans].root : opp[card.ans].root);
+				//*this = c;
 			} else {
 				cards.push_back(card);
 			}
@@ -245,11 +255,11 @@ bool Card::set(Card& card, int type_)
 			return true;
 
 		} else if (method == "inc") {
-			cards.push_back(card);
 			////////////////////////////////////////////////////////////////////
 			// inc i
 			//   v[i] <- v[i] + 1
 			//   return I
+			cards.push_back(card);
 			if (cards.size() == n) {
 				int x;
 				if (cards[0].func(x, type)) {
@@ -312,8 +322,11 @@ bool Card::set(Card& card, int type_)
 
 			// y <- f'[i]
 			// return y
-			if (card.is_number) *this = (type == 0 ? opp[card.ans].root : pro[card.ans].root);
-			else cards.push_back(card);
+			if (card.is_number) {
+				*this = (type == 0 ? opp[card.ans].root : pro[card.ans].root);
+				//Card c(type == 0 ? opp[card.ans].root : pro[card.ans].root);
+				//*this = c;
+			} else cards.push_back(card);
 			return true;
 
 		} else if (method == "revive") {
@@ -396,10 +409,14 @@ bool Card::set(Card& card, int type_)
 			if (method == "get") {
 				if (cards[n-1].is_number) {
 					*this = (type == 0 ? pro[cards[n-1].ans].root : opp[cards[n-1].ans].root);
+					//Card c(type == 0 ? pro[cards[n-1].ans].root : opp[cards[n-1].ans].root);
+					//*this = c;
 				}
 			} else if (method == "copy") {
 				if (cards[n-1].is_number) {
 					*this = (type == 0 ? opp[cards[n-1].ans].root : pro[cards[n-1].ans].root);
+					//Card c(type == 0 ? opp[cards[n-1].ans].root : pro[cards[n-1].ans].root);
+					//*this = c;
 				}
 			} else if (method == "revive") {
 				if (cards[n-1].is_number) {
@@ -463,6 +480,10 @@ bool Card::set(Card& card, int type_)
 					int jj = cards[1].ans;
 					int x;
 					if (cards[2].func(x, type)) {
+						if (ii < 0 || ii >= N_SLOTS || jj < 0 || ii >= N_SLOTS) {
+							cerr << "Error: help: 0 <= index <= 255: " << ii << ", " << jj << endl;
+							return false;
+						}
 						int nn = x;
 						if (!is_zombie_world) {
 							if (type == 0) {
