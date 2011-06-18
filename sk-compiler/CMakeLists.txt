@@ -19,7 +19,8 @@ set(SOURCE ltg-opt.cpp
            eval.cpp
            zombie-help.cpp
            demos.cpp
-           virtual-slot.cpp)
+           virtual-slot.cpp
+           mempool.cpp)
 
 file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")

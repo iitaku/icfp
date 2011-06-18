@@ -12,33 +12,33 @@ static bool is_zombie_world = false;
 
 event_list_t Slot::event;
 
-Card::Card(const std::string& method_)
+Card::Card(enum card_code method_)
 {
 	method = method_;
 	is_number = false;
-	if (method == "zero" || method == "number") {
+
+	switch (method) {
+	case CARD_ZERO:
+		is_number = true;
 		n = 0;
 		ans = 0;
-		is_number = true;
-	} else if (method == "S" || method == "attack" || method == "help") {
+		break;
+		
+	case CARD_S:
+	case CARD_ATTACK:
+	case CARD_HELP:
 		n = 3;
-	} else if (method == "K" || method == "zombie") {
-		n = 2;
-	} else {
-		n = 1;
-	}
-}
+		break;
 
-Card::Card(const std::string& method_, int ans_)
-{
-	method = method_;
-	if (method != "number") {
-		cerr << "Error: method should be number, not others: " << method << endl;
-		return;
+	case CARD_K:
+	case CARD_ZOMBIE:
+		n = 2;
+		break;
+
+	default:
+		n = 1;
+		break;
 	}
-	n = 0;
-	is_number = true;
-	ans = ans_;
 }
 
 Card::~Card()
@@ -57,7 +57,7 @@ bool Card::set(Card& card, int type_)
 	if (cards.size() < n) {
 		// set argument in function
 
-		if (method == "S") {
+		if (method == CARD_S) {
 			////////////////////////////////////////////////////////////////////
 			// S f g x
 			//   h <- f x
@@ -91,7 +91,7 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 
-		} else if (method == "attack") {
+		} else if (method == CARD_ATTACK) {
 			////////////////////////////////////////////////////////////////////
 			// attack i j n
 			//   v[i] <- v[i] - n
@@ -136,7 +136,7 @@ bool Card::set(Card& card, int type_)
 					}
 
 					// return I
-					method = "I";
+					method = CARD_I;
 					cards.clear();
 					n = 1;
 					is_number = false;
@@ -144,7 +144,7 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 
-		} else if (method == "help") {
+		} else if (method == CARD_HELP) {
 			////////////////////////////////////////////////////////////////////
 			// help i j n
 			//   v[i] <- v[i] - n
@@ -186,7 +186,7 @@ bool Card::set(Card& card, int type_)
 					}
 
 					// return I
-					method = "I";
+					method = CARD_I;
 					cards.clear();
 					n = 1;
 					is_number = false;
@@ -194,7 +194,7 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 
-		} else if (method == "K") {
+		} else if (method == CARD_K) {
 			////////////////////////////////////////////////////////////////////
 			// K x y
 			//   return x
@@ -206,14 +206,15 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 
-		} else if (method == "put") {
+		} else if (method == CARD_PUT) {
 			////////////////////////////////////////////////////////////////////
 			// put x
 			//   return I
-			method = "I";
+			n = 1;
+			method = CARD_I;
 			return true;
 
-		} else if (method == "get") {
+		} else if (method == CARD_GET) {
 			////////////////////////////////////////////////////////////////////
 			// get i
 			//   y <- f[i]
@@ -229,7 +230,7 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 
-		} else if (method == "succ") {
+		} else if (method == CARD_SUCC) {
 			////////////////////////////////////////////////////////////////////
 			// succ n
 			//   m <- n + 1
@@ -247,7 +248,7 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 
-		} else if (method == "dbl") {
+		} else if (method == CARD_DBL) {
 			////////////////////////////////////////////////////////////////////
 			// dbl n
 			//   m <- n * 2
@@ -265,7 +266,7 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 
-		} else if (method == "inc") {
+		} else if (method == CARD_INC) {
 			////////////////////////////////////////////////////////////////////
 			// inc i
 			//   v[i] <- v[i] + 1
@@ -291,13 +292,13 @@ bool Card::set(Card& card, int type_)
 			}
 
 			// return I
-			method = "I";
+			method = CARD_I;
 			cards.clear();
 			is_number = false;
 			n = 1;
 			return true;
 
-		} else if (method == "dec") {
+		} else if (method == CARD_DEC) {
 			////////////////////////////////////////////////////////////////////
 			// dec i
 			//   v[255-i] <- v[255-i] - 1
@@ -323,13 +324,13 @@ bool Card::set(Card& card, int type_)
 			}
 
 			// return I
-			method = "I";
+			method = CARD_I;
 			cards.clear();
 			is_number = false;
 			n = 1;
 			return true;
 
-		} else if (method == "copy") {
+		} else if (method == CARD_COPY) {
 			////////////////////////////////////////////////////////////////////
 			// copy i
 			//   y <- f'[i]
@@ -344,7 +345,7 @@ bool Card::set(Card& card, int type_)
 			} else cards.push_back(card);
 			return true;
 
-		} else if (method == "revive") {
+		} else if (method == CARD_REVIVE) {
 			////////////////////////////////////////////////////////////////////
 			// revice i
 			//   v[i] <- 1
@@ -362,14 +363,14 @@ bool Card::set(Card& card, int type_)
 				}
 
 				// return I
-				method = "I";
+				method = CARD_I;
 				cards.clear();
 				n = 1;
 				is_number = false;
 			}
 			return true;
 
-		} else if (method == "zombie") {
+		} else if (method == CARD_ZOMBIE) {
 			////////////////////////////////////////////////////////////////////
 			// zombie i x
 			//   f'[255-i] <- x
@@ -399,14 +400,14 @@ bool Card::set(Card& card, int type_)
 				}
 
 				// return I
-				method = "I";
+				method = CARD_I;
 				cards.clear();
 				n = 1;
 				is_number = false;
 			}
 			return true;
 
-		} else if (method == "I") {
+		} else if (method == CARD_I) {
 			////////////////////////////////////////////////////////////////////
 			// I x
 			//   return x
@@ -421,19 +422,19 @@ bool Card::set(Card& card, int type_)
 
 		if (cards[n-1].set(card, type)) {
 			int x;
-			if (method == "get") {
+			if (method == CARD_GET) {
 				if (cards[n-1].is_number) {
 					*this = (type == 0 ? pro[cards[n-1].ans].root : opp[cards[n-1].ans].root);
 					//Card c(type == 0 ? pro[cards[n-1].ans].root : opp[cards[n-1].ans].root);
 					//*this = c;
 				}
-			} else if (method == "copy") {
+			} else if (method == CARD_COPY) {
 				if (cards[n-1].is_number) {
 					*this = (type == 0 ? opp[cards[n-1].ans].root : pro[cards[n-1].ans].root);
 					//Card c(type == 0 ? opp[cards[n-1].ans].root : pro[cards[n-1].ans].root);
 					//*this = c;
 				}
-			} else if (method == "revive") {
+			} else if (method == CARD_REVIVE) {
 				if (cards[n-1].is_number) {
 					int ii = cards[n-1].ans;
 					if (ii >= 0 && ii < N_SLOTS) {
@@ -445,12 +446,12 @@ bool Card::set(Card& card, int type_)
 					} else {
 						cerr << "Error: copy: invalid slot number: " << card.ans << endl; ///
 					}
-					method = "I";
+					method = CARD_I;
 					cards.clear();
 					n = 1;
 					is_number = false;
 				}
-			} else if (method == "attack") {
+			} else if (method == CARD_ATTACK) {
 				if (cards[n-1].is_number) {
 					int ii = cards[0].ans;
 					int jj = cards[1].ans;
@@ -489,13 +490,13 @@ bool Card::set(Card& card, int type_)
 							}
 						}
 
-						method = "I";
+						method = CARD_I;
 						cards.clear();
 						n = 1;
 						is_number = false;
 					}
 				}
-			} else if (method == "help") {
+			} else if (method == CARD_HELP) {
 				if (cards[n-1].is_number) {
 					int ii = cards[0].ans;
 					int jj = cards[1].ans;
@@ -541,13 +542,13 @@ bool Card::set(Card& card, int type_)
 							}
 						}
 
-						method = "I";
+						method = CARD_I;
 						cards.clear();
 						n = 1;
 						is_number = false;
 					}
 				}
-			} else if (method == "I") {
+			} else if (method == CARD_I) {
 				Card c(cards[0]);
 				*this = c;
 				return true;
@@ -555,8 +556,8 @@ bool Card::set(Card& card, int type_)
 			if (func(x, type)) {
 				is_number = true;
 				ans = x;
-				if (method == "succ") ans++;
-				else if (method == "dbl") ans *= 2;
+				if (method == CARD_SUCC) ans++;
+				else if (method == CARD_SUCC) ans *= 2;
 				if (ans > 65535) ans = 65535;
 			}
 			return true;
@@ -591,7 +592,7 @@ bool Card::func(int& ans_, int type_)
 	return false;
 }
 
-Slot::Slot(int type_) : type(type_), cnt(1), v(10000), root(Card("I"))
+Slot::Slot(int type_) : type(type_), cnt(1), v(10000), root(Card(CARD_I))
 {
 }
 
@@ -629,7 +630,7 @@ dump_card(Card const &c)
 	if (c.is_number) {
 		fprintf(stderr, "%d", c.ans);
 	} else {
-		fprintf(stderr, "(%s ", c.method.c_str());
+		fprintf(stderr, "(%s ", get_card_name(c.method));
 		for (int i=0; i<c.cards.size(); i++) {
 			dump_card(c.cards[i]);
 		}
@@ -642,7 +643,7 @@ void
 dump_slots()
 {
 	for (int i=0; i<256; i++) {
-		if (pro[i].root.method == "I" &&
+		if (pro[i].root.method == CARD_I &&
 			pro[i].v == 10000)
 		{
 			/* nop */
@@ -654,7 +655,7 @@ dump_slots()
 	}
 
 	for (int i=0; i<256; i++) {
-		if (opp[i].root.method == "I" &&
+		if (opp[i].root.method == CARD_I &&
 			opp[i].v == 10000)
 		{
 			/* nop */

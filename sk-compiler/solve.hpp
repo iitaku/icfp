@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 
+#include "tool.hpp"
 #include "events.hpp"
 
 namespace copy_kawaii {
@@ -18,7 +19,7 @@ const int N_SLOTS = 256;
 class Card {
 public:
 	// card type : 15 types
-	std::string method;
+	enum card_code method;
 	// arguments : 0-3
 	std::vector<Card> cards;
 	// return value
@@ -36,8 +37,12 @@ public:
 	 * @param[in] method_  card type
 	 * @param[in] ans_     set number to card (number card only)
 	 */
-	Card(const std::string& method_);
-	Card(const std::string& method_, int ans_);
+	Card(enum card_code method_);
+	Card(int ans_) {
+		is_number = true;
+		ans = ans_;
+		n = 0;
+	}
 	Card(const Card& card) {
 		method = card.method;
 		cards = card.cards;

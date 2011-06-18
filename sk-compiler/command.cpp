@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#define ENABLE_SIM 0
+#define ENABLE_SIM 1
 
 namespace copy_kawaii {
 FILE *from_opponent;
@@ -77,7 +77,7 @@ get_command_line(FILE *fp)
         ret.com.slot = read_slot();
 
         if (ENABLE_SIM) {
-            ret.events = opp[ret.com.slot].set(card.first, 1);
+            ret.events = opp[ret.com.slot].set(card.second, 1);
         }
     } else {
         ret.com.slot = read_slot();
@@ -85,7 +85,7 @@ get_command_line(FILE *fp)
         ret.com.card = card.second;
 
         if (ENABLE_SIM) {
-            ret.events = opp[ret.com.slot].set(card.first, 2);
+            ret.events = opp[ret.com.slot].set(card.second, 2);
         }
     }
 
@@ -114,7 +114,7 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            ret = pro[com.slot].set(Card(name), 1);
+            ret = pro[com.slot].set(Card(com.card), 1);
         }
     } else {
         fprintf(to_opponent, "2\n");
@@ -130,7 +130,7 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            ret = pro[com.slot].set(Card(name), 2);
+            ret = pro[com.slot].set(Card(com.card), 2);
         }
     }
 #ifdef WITH_SLEEP
