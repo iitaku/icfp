@@ -88,6 +88,10 @@ class HelpCmd:
     def check(self, args):
         return   
     def do(self, args):
+        print 'file path  -- load log file'
+        print 'game       -- print game info'
+        print 'slot t p n -- print slot info about t\'th turn, p\'th player, n\'th slot'
+        print 'help       -- print help'
         return
 
 # global game object
