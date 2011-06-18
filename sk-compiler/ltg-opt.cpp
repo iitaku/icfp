@@ -94,6 +94,6 @@ main(int argc, char **argv)
     
     var_map_t vm;
 
-    // zombie_help();
-    demo_left();
+     zombie_help();
+    //demo_left();
 }
