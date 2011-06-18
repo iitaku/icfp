@@ -18,37 +18,31 @@ const int N_SLOTS = 256;
  */
 class Card {
 public:
-	// card type : 15 types
-	enum card_code method;
-	// arguments : 0-3
-	std::vector<Card> cards;
-	// return value
-	int ans;
-	// number of arguments
-	int n;
-	// this card is number ?
 	bool is_number;
-	// proponent (0) or opponent (1)
-	int type;
+	// card type : 15 types
+	enum card_code card;
+	// arguments : 0-3
+
+	union {
+		int int_val;
+		struct {
+			int cur_applied;
+			Card *args[3];
+		} func;
+	} u;
 
 public:
+
 	/**
 	 * @brief constructor
 	 * @param[in] method_  card type
 	 * @param[in] ans_     set number to card (number card only)
 	 */
-	Card(enum card_code method_);
+	Card(enum card_code func);
 	Card(int ans_) {
 		is_number = true;
 		ans = ans_;
 		n = 0;
-	}
-	Card(const Card& card) {
-		method = card.method;
-		cards = card.cards;
-		ans = card.ans;
-		n = card.n;
-		is_number = card.is_number;
 	}
 	~Card();
 
@@ -67,31 +61,27 @@ public:
 	bool func(int& ans_, int type_=0);
 };
 
+/* return nothing() if type error is occured */
+optional<Card *>apply(event_list_t &events,
+					  Card *func,
+					  Card *arg,
+					  int slot,
+					  bool is_pro);
+
 /**
  * @brief Slot class
  */
-class Slot {
-private:
-	// proponent (0) or opponent (1)
-	int type;
-
-public:
-	static event_list_t event;
-
-	// count cards (not implement yet)
-	int cnt;
+struct Slot {
 	// vitality
 	int v;
 	// field value (not implement yet; use slots[*].root.ans or slots[*].func(ans))
-	int f;
-	// root of cards (functions)
-	Card root;
+	Card *f
 
 	/**
 	 * @brief constructor
 	 * @param[in] type_    proponent (0) or opponent (1)
 	 */
-	Slot(int type_=0);
+	Slot();
 	~Slot();
 
 	/**

@@ -29,6 +29,12 @@ struct Event {
         e.u.slot = slot;
         return e;
     }
+    static Event type_error(int slot) {
+        Event e;
+        e.code = TYPE_ERROR;
+        e.u.slot = slot;
+        return e;
+    }
 };
 
 typedef std::vector<Event> event_list_t;

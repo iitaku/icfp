@@ -8,6 +8,26 @@ namespace copy_kawaii {
 
 using namespace std;
 
+static const int num_arg[] = {
+    1,                          // I
+    0,                          // ZERO
+    1,                          // SUCC
+    1,                          // DBL
+    1,                          // GET
+    1,                          // PUT
+    3,                          // S
+    2,                          // K
+    1,                          // INC
+    1,                          // DEC
+    3,                          // ATTACK
+    3,                          // HELP
+    1,                          // COPY
+    1,                          // REVIBE
+    2,                          // ZOMBIE,
+    0                           // ?
+}
+
+
 static bool is_zombie_world = false;
 
 event_list_t Slot::event;
@@ -45,264 +65,253 @@ Card::~Card()
 {
 }
 
-bool Card::set(Card& card, int type_)
+optional<Card *>
+apply(event_list_t &events,
+	  Card *func,
+	  Card *arg,
+	  int slot,
+	  bool is_pro)
 {
-	type = type_;
+	if (func->is_number == 0) {
+		if (is_pro) {
+			events.push_back(Event::type_error(slot));
+		}
 
-	if (is_number) {
-		cerr << "Error: number is not function: " << method << endl; ///
-		return false;
+		return nothing();
 	}
 
-	if (cards.size() < n) {
-		// set argument in function
+	int full_num_arg = num_arg[func->card];
+	int remain = full_num_arg - func->u.func->cur_applied;;
 
-		if (method == CARD_S) {
+	assert(remain != 0);
+
+	if (remain == 1) {
+		/* all arguments are applied. fold it */
+		Card *h,*y,*z,*f,*g,*n, *i, *j;
+
+		switch (func->card) {
+		case CARD_S:
 			////////////////////////////////////////////////////////////////////
 			// S f g x
 			//   h <- f x
 			//   y <- g x
 			//   z <- h y
 			//   return z
-			if ((cards.size() == 0 || cards.size() == 1) && card.is_number) {
-				cerr << "Error: S: fisrt / second arg in S should be function, not number" << endl;
-				return false;
+			f = func->u.func.args[0];
+			g = func->u.func.args[1];
+			x = func->u.func.args[2];
+
+			h = apply(events, f, x, slot, is_pro);
+			if (!h) {
+				return nothing();
 			}
-			cards.push_back(card);
-			if (cards.size() == n) {
-				// h <- f x
-				cards[0].set(cards[2], type);
-				if (cards[0].is_number)
-					cerr << "Error: S: f: need function, not number" << endl;
-				// y <- g x
-				cards[1].set(cards[2], type);
-				// z <- h y
-				if (!cards[0].set(cards[1], type));
 
-				// return z
-				Card c(cards[0]);
-				*this = c;
-
-				int x;
-				if (func(x, type)) {
-					is_number = true;
-					ans = x;
-				}
+			y = apply(events, g, x, slot, is_pro);
+			if (!y) {
+				return nothing();
 			}
-			return true;
 
-		} else if (method == CARD_ATTACK) {
+			z = apply(events, *h, *y, slot, is_pro);
+			return z;
+
+		case CARD_ATTACK: {
 			////////////////////////////////////////////////////////////////////
 			// attack i j n
 			//   v[i] <- v[i] - n
 			//   v[255-j] <- v[255-j] - n * 9 / 10
 			//   return I
-			if ((cards.size() == 0 || cards.size() == 1) && !card.is_number) {
-				cerr << "Error: attack: fisrt / second arg in S should be number, not function" << endl;
-				return false;
-			}
-			cards.push_back(card);
-			if (cards.size() == n) {
-				int ii = cards[0].ans;
-				int jj = cards[1].ans;
-				int x;
-				if (cards[2].func(x, type)) {
-					if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
-						cerr << "Error: attack: 0 <= index <= 255: " << ii << ", " << jj << endl;
-						return false;
-					}
-					int nn = x;
-					// v[i] <- v[i] - n
-					if (type == 0) {
-						pro[ii].v -= nn;
-						if (pro[ii].v <= 0) {
-							pro[ii].v = 0;
-							Slot::event.push_back(Event::dead(Event::PROP_DEAD, ii));
-						}
-					} else {
-						opp[ii].v -= nn;
-						if (opp[ii].v < 0) opp[ii].v = 0;
-					}
-					// v[255-j] <- v[255-j] - n * 9 / 10
-					if (type == 0) {
-						opp[N_SLOTS-jj-1].v -= nn * 9 / 10;
-						if (opp[N_SLOTS-jj-1].v < 0) opp[N_SLOTS-jj-1].v = 0;
-					} else {
-						pro[N_SLOTS-jj-1].v -= nn * 9 / 10;
-						if (pro[N_SLOTS-jj-1].v <= 0) {
-							pro[N_SLOTS-jj-1].v = 0;
-							Slot::event.push_back(Event::dead(Event::PROP_DEAD, N_SLOTS-jj-1));
-						}
-					}
 
-					// return I
-					method = CARD_I;
-					cards.clear();
-					n = 1;
-					is_number = false;
+			i = func->u.func.args[0];
+			j = func->u.func.args[1];
+			n = func->u.func.args[2];
+
+			if ((! i->is_number) || (! j->is_number) || (! n->is_number)) {
+				// cerr << "Error: attack: fisrt / second arg in S should be number, not function" << endl;
+				return nothing();
+			}
+			int ii = i->u.int_val;
+			int jj = i->u.int_val;
+			int nn = n->u.int_val;
+
+			if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
+				// cerr << "Error: attack: 0 <= index <= 255: " << ii << ", " << jj << endl;
+				return nothing();
+			}
+
+			if (is_pro) {
+				pro[ii].v -= nn;
+				if (pro[ii].v <= 0) {
+					pro[ii].v = 0;
+					events.push_back(Event::dead(Event::PROP_DEAD, ii));
+				}
+				opp[255-jj-1].v -= nn * 9 / 10;
+				if (opp[255-jj].v < 0) opp[255-jj].v = 0;
+			} else {
+				opp[ii].v -= nn;
+				if (opp[ii].v < 0) opp[ii].v = 0;
+				pro[255-jj].v -= nn * 9 / 10;
+				if (pro[255-jj].v <= 0) {
+					pro[255-jj].v = 0;
+					Slot::event.push_back(Event::dead(Event::PROP_DEAD, 255-jj));
 				}
 			}
-			return true;
+		}
+			return new Card(CARD_I);
 
-		} else if (method == CARD_HELP) {
+		case CARD_HELP: {
 			////////////////////////////////////////////////////////////////////
 			// help i j n
 			//   v[i] <- v[i] - n
 			//   v[255-j] <- v[255-j] + n * 11 / 10
 			//   return I
-			if ((cards.size() == 0 || cards.size() == 1) && !card.is_number) {
-				cerr << "Error: help: fisrt / second arg in S should be number, not function" << endl;
-				return false;
-			}
-			cards.push_back(card);
-			if (cards.size() == n) {
-				int ii = cards[0].ans;
-				int jj = cards[1].ans;
-				int x;
-				if (cards[2].func(x, type)) {
-					if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
-						cerr << "Error: help: 0 <= index <= 255: " << ii << ", " << jj << endl;
-						return false;
-					}
-					int nn = x;
-					// v[i] <- v[i] - n
-					if (type == 0) {
-						pro[ii].v -= nn;
-						if (pro[ii].v <= 0) {
-							pro[ii].v = 0;
-							Slot::event.push_back(Event::dead(Event::PROP_DEAD, ii));
-						}
-					} else {
-						opp[ii].v -= nn;
-						if (opp[ii].v < 0) opp[ii].v = 0;
-					}
-					// v[255-j] <- v[255-j] + n * 11 / 10
-					if (type == 0) {
-						pro[jj].v += nn * 11 / 10;
-						if (pro[jj].v > 65535) pro[jj].v = 65535;
-					} else {
-						opp[jj].v += nn * 11 / 10;
-						if (opp[jj].v > 65535) opp[jj].v = 65535;
-					}
 
-					// return I
-					method = CARD_I;
-					cards.clear();
-					n = 1;
-					is_number = false;
+			i = func->u.func.args[0];
+			j = func->u.func.args[1];
+			n = func->u.func.args[2];
+
+			if ((! i->is_number) || (! j->is_number) || (! n->is_number)) {
+				// cerr << "Error: attack: fisrt / second arg in S should be number, not function" << endl;
+				return nothing();
+			}
+			int ii = i->u.int_val;
+			int jj = i->u.int_val;
+			int nn = n->u.int_val;
+
+			if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
+				// cerr << "Error: attack: 0 <= index <= 255: " << ii << ", " << jj << endl;
+				return nothing();
+			}
+
+			if (is_pro) {
+				pro[ii].v -= nn;
+				if (pro[ii].v <= 0) {
+					pro[ii].v = 0;
+					events.push_back(Event::dead(Event::PROP_DEAD, ii));
 				}
-			}
-			return true;
+				pro[jj].v += nn * 11 / 10;
+				if (pro[jj].v > 65535) pro[jj].v = 65535;
+			} else {
+				opp[ii].v -= nn;
+				if (opp[ii].v < 0) opp[ii].v = 0;
 
-		} else if (method == CARD_K) {
+				opp[jj].v += nn * 11 / 10;
+				if (opp[jj].v > 65535) opp[jj].v = 65535;
+			}
+		}
+			return new Card(CARD_I);
+
+		case CARD_K: {
 			////////////////////////////////////////////////////////////////////
 			// K x y
 			//   return x
-			cards.push_back(card);
-			if (cards.size() == n) {
-				// return x
-				Card c(cards[0]);
-				*this = c;
-			}
-			return true;
+			x = func->u.args[0];
+			// y = func->u.args[1];
 
-		} else if (method == CARD_PUT) {
-			////////////////////////////////////////////////////////////////////
-			// put x
-			//   return I
-			n = 1;
-			method = CARD_I;
-			return true;
+			return x;
+		}
 
-		} else if (method == CARD_GET) {
+		case CARD_PUT:
+			return new Card(CARD_I);
+
+		case CARD_GET: {
 			////////////////////////////////////////////////////////////////////
 			// get i
 			//   y <- f[i]
 			//   return y
-			if (card.is_number) {
-				// y <- f[i]
-				// return y
-				*this = (type == 0 ? pro[card.ans].root : opp[card.ans].root);
-				//Card c(type == 0 ? pro[card.ans].root : opp[card.ans].root);
-				//*this = c;
-			} else {
-				cards.push_back(card);
-			}
-			return true;
 
-		} else if (method == CARD_SUCC) {
+			i = func->u.args[0];
+			if (! i->is_number) {
+				return nothing();
+			}
+
+			if (is_pro) {
+				y = pro[i->u.int_val].f;
+			} else {
+				y = opp[i->u.int_val].f;
+			}
+
+			y = card_deep_copy(y);
+
+			return y;
+		}
+
+		case CARD_SUCC: {
 			////////////////////////////////////////////////////////////////////
 			// succ n
 			//   m <- n + 1
 			//   return m
-			cards.push_back(card);
-			if (cards.size() == n) {
-				int x;
-				if (cards[0].func(x, type)) {
-					// m <- n + 1
-					// return m
-					ans = x + 1;
-					if (ans > 65535) ans = 65535;
-					is_number = true;
-				}
-			}
-			return true;
 
-		} else if (method == CARD_DBL) {
+			n = func->u.args[0];
+			if (! n->is_number) {
+				return nothing();
+			}
+
+			m = new Card(n->u.int_val + 1);
+			return m;
+		}
+
+		case CARD_DBL: {
 			////////////////////////////////////////////////////////////////////
 			// dbl n
 			//   m <- n * 2
 			//   return m
-			cards.push_back(card);
-			if (cards.size() == n) {
-				int x;
-				if (cards[0].func(x, type)) {
-					// m <- n * 2
-					// return m
-					ans = x * 2;
-					if (ans > 65535) ans = 65535;
-					is_number = true;
-				}
+			
+			n = func->u.args[0];
+			if (! n->is_number) {
+				return nothing();
 			}
-			return true;
 
-		} else if (method == CARD_INC) {
+			m = new Card(n->u.int_val * 2);
+			return m;
+		}
+
+		case CARD_INC: {
 			////////////////////////////////////////////////////////////////////
 			// inc i
 			//   v[i] <- v[i] + 1
 			//   return I
-			cards.push_back(card);
-			if (cards.size() == n) {
-				int x;
-				if (cards[0].func(x, type)) {
-					if (x >= 0 && x < N_SLOTS) {
-						// v[i] <- v[i] + 1
-						if (!is_zombie_world) {
-							if (type == 0 && pro[x].v > 0 && pro[x].v < 65535) pro[x].v++;
-							else if (type == 1 && opp[x].v > 0 && opp[x].v < 65535) opp[x].v++;
-						} else {
-							if (type == 0 && opp[x].v > 0 && opp[x].v < 65535) opp[x].v--;
-							else if (type == 1 && pro[x].v > 0 && pro[x].v < 65535) pro[x].v--;
-							if (pro[x].v <= 0)
-								Slot::event.push_back(Event::dead(Event::PROP_DEAD, x));
-						}
-					} else
-						cerr << "Error: inc: exceeded limit: " << x << endl;
-				}
+
+			i = func->u.args[0];
+
+			if (! i->is_number) {
+				return nothing();
 			}
 
-			// return I
-			method = CARD_I;
-			cards.clear();
-			is_number = false;
-			n = 1;
-			return true;
+			int idx = i->u.int_val;
 
-		} else if (method == CARD_DEC) {
+			if (is_pro) {
+				if (is_zombie_apply) {
+					if ((pro[idx].v > 0) && (pro[idx].v < 65535)) {
+						pro[idx].v--;
+						if (pro[idx].v <= 0) {
+							Slot::event.push_back(Event::dead(Event::PROP_DEAD, idx));
+						}
+					}
+				} else {
+					if ((pro[idx].v > 0) && (pro[idx].v < 65535)) {
+						pro[idx].v++;
+					}
+				}
+			} else {
+				if (is_zombie_apply) {
+					if ((opp[idx].v > 0) && (opp[idx].v < 65535)) {
+						opp[idx].v--;
+					}
+				} else {
+					if ((opp[idx].v > 0) && (opp[idx].v < 65535)) {
+						opp[idx].v++;
+					}
+				}
+			}
+			return new Card(CARD_I);
+		}
+
+		case CARD_DEC:
 			////////////////////////////////////////////////////////////////////
 			// dec i
 			//   v[255-i] <- v[255-i] - 1
 			//   return I
+
 			cards.push_back(card);
 			if (cards.size() == n) {
 				int x;
