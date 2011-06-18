@@ -2,7 +2,8 @@
 
 import sys
 import re
-   
+
+# definition of LTG 
 class Slot:
     def __init__(self, vital=100000, field="I"):
         self.vital = vital
@@ -10,19 +11,25 @@ class Slot:
         return
 
 class Deck:
-    def __init__(self, slots=[Slot]*255):
+    def __init__(self, slots=[Slot()]*256):
         self.slots = slots
         return
 
 class Table:
-    def __init__(self, pro_decks=Deck, opp_decks=Deck):
-        self.pro_decks = pro_decks
-        self.opp_decks = opp_decks
+    def __init__(self, decks=[Deck()]*2):
+        self.decks = decks
         return
 
+# result value -1, 0, 1, respectively means player 0 wins, draw, player 1 wins.
 class Game:
-    def __init__(self, tables=[Table]):
+    def __init__(self, tables=[Table()]):
         self.tables = tables
+        self.alive = [None, None]
+        return
+
+# repl commands
+class NoCmd:
+    def do(self, args):
         return
 
 class FileCmd:
@@ -38,8 +45,13 @@ class FileCmd:
 
 class GameCmd:
     def check(self, args):
-        return   
+        if 0 != len(args):
+            raise Exception("Invalid arg.")
+        return
     def do(self, args):
+        self.check(args)
+        print 'player 0 : %d' % game.alive[0]
+        print 'player 1 : %d' % game.alive[1]
         return
 
 class TableCmd:
@@ -56,8 +68,20 @@ class DeckCmd:
 
 class SlotCmd:
     def check(self, args):
-        return   
+        if 3 != len(args):
+            raise Exception("Invalid Arg.")
+        return
     def do(self, args):
+        self.check(args)
+        
+        turn = int(take(args))
+        player = int(take(args))
+        index = int(take(args))
+        
+        slot = game.tables[turn].decks[player].slots[index]
+        
+        print 'vitality : %d' % slot.vital
+        print 'field    : %s' % slot.field
         return
 
 class HelpCmd:
@@ -71,6 +95,7 @@ game = None
 
 # command list
 command_list = { 
+    ''      : NoCmd(),
     'file'  : FileCmd(),
     'game'  : GameCmd(),
     'table' : TableCmd(),
@@ -93,32 +118,57 @@ def analyze(filename):
     with open(filename) as f:
 
         header = f.readline()
-        result = re.search('^Lambda: The Gathering version', header)
+        result = re.match('^Lambda: The Gathering version', header)
         
         if None == result:
             raise Exception("Invalid file.")
 
-        game = Game
+        game = Game()
         
-        turn_delim = re.compile('^#+ turn')
-        
+        turn_delim = re.compile('^###### turn')
+        player_delim = re.compile('^\*\*\* player [0-1]\'s turn, with slots:$')
         game_state = re.compile('^[0-9]+=\{-*[0-9]+,[()a-zA-Z0-9]+\}$')
+        game_result = re.compile('!! won|draw by [0-9]+:[0-9]+ after turn [0-9]+')
+        
+        turn = 0
+        player = 1
         
         for line in f:
-            #result = turn_delim.search(line)
-            #if None == result:
-            #    continue
-            
-            result = game_state.search(line)
-            if None != line:
-                print line
+            result = turn_delim.match(line)
+            if None != result:
+                game.tables.append(Table())
+                turn += 1
+                continue
+
+            result = player_delim.match(line)
+            if None != result:
+                player ^= 1
+                continue
+
+            result = game_state.match(line)
+            if None != result:
+                state = result.group()
+                state = state.split('=')
+                index = int(state[0])
+                state = state[1].strip('{}').split(',')
+                vital = int(state[0])
+                field = state[1]
+                
+                game.tables[turn].decks[player].slots[index] = Slot(vital, field)
+                continue
+        
+            result = game_result.match(line)
+            if None != result:
+                game_result = result.group().split(' ')
+                game.alive[0] = game_result[3].split(':')[0]
+                game.alive[1] = game_result[3].split(':')[1]
     return
     
 def repl():
     print "Lambda: The Gathering -- Log Analyzer"
 
     while True:
-        line = raw_input('=>> ')
+        line = raw_input('>>= ')
         args = line.split(" ")
         command = take(args)
                
