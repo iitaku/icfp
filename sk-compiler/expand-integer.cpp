@@ -26,12 +26,12 @@ expand_integer(int n, bool top_level)
 }
 
 static expr *
-f(program &prog, const expr *e, bool top_level)
+f(var_map_t &vars, const expr *e, bool top_level)
 {
     switch (e->code) {
     case expr::APPLY:
-        return expr::apply(f(prog, e->u.apply.f, false),
-                           f(prog, e->u.apply.a, false));
+        return expr::apply(f(vars, e->u.apply.f, false),
+                           f(vars, e->u.apply.a, false));
 
     case expr::CARD:
         return expr::card(e->u.card);
@@ -43,7 +43,7 @@ f(program &prog, const expr *e, bool top_level)
         break;
 
     case expr::REF_STATIC_VAR: {
-        int val = prog.vars[e->u.ref_static_var_name];
+        int val = vars[e->u.ref_static_var_name];
         return expand_integer(val, top_level);
     }
         break;
@@ -70,9 +70,9 @@ f(program &prog, const expr *e, bool top_level)
 }
 
 expr *
-expand_integer(program &prog, const expr *src)
+expand_integer(var_map_t &vars, const expr *src)
 {
-    return f(prog, src, true);
+    return f(vars, src, true);
 }
 
 }

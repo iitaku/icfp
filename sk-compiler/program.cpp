@@ -2,6 +2,7 @@
 #include "program.hpp"
 #include "translators.hpp"
 #include "slots.hpp"
+#include "solve.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,7 +42,11 @@ struct lexval {
         AT,
         CLEAR,
         SET_SLOT,
-        MOD
+        MOD,
+        PROV,
+        OPPV,
+        LBRACKET,
+        RBRACKET
     } code;
 
     union {
@@ -171,6 +176,12 @@ lex(struct lexer *l)
                             if (strcmp("clear", symbuf) == 0) {
                                 return l->lastval = lexval(lexval::CLEAR);
                             }
+                            if (strcmp("prov", symbuf) == 0) {
+                                return l->lastval = lexval(lexval::PROV);
+                            }
+                            if (strcmp("oppv", symbuf) == 0) {
+                                return l->lastval = lexval(lexval::OPPV);
+                            }
 
                             return l->lastval = lexval::symval(strdup(symbuf));
 
@@ -258,6 +269,10 @@ lex(struct lexer *l)
                 return l->lastval = lexval(lexval::AT);
             case '%':
                 return l->lastval = lexval(lexval::MOD);
+            case '[':
+                return l->lastval = lexval(lexval::LBRACKET);
+            case ']':
+                return l->lastval = lexval(lexval::RBRACKET);
 
             default:
                 break;
@@ -267,6 +282,18 @@ lex(struct lexer *l)
             abort();
         }
     }
+}
+
+static void
+expect(lexer &l,
+       const char *expect,
+       enum lexval::lcode e)
+{
+    if (l.lastval.code != e) {
+        fprintf(stderr, "expect %s\n", expect);
+        assert(0);
+    }
+    lex(&l);
 }
 
 
@@ -361,6 +388,7 @@ parse_expr(struct lexer *l,
             break;
 
         case lexval::EOL:
+        case lexval::EOF_:
             if (! toplev) {
                 fprintf(stderr, "unmatch ();\n");
                 abort();
@@ -385,6 +413,14 @@ static struct expr *
 parse_expr(lexer &l)
 {
     return parse_expr(&l, true);
+}
+
+expr *
+parse_expr(const char *src)
+{
+    struct lexer l(src, strlen(src));
+    lex(&l);
+    return parse_expr(l);
 }
 
 static static_expr *parse_static_expr(lexer &l,
@@ -418,6 +454,22 @@ static_term(lexer &l)
             assert(0);
         }
         lex(&l);
+        return e;
+
+    case lexval::PROV:
+        lex(&l);
+        expect(l, "[", lexval::LBRACKET);
+        e = parse_static_expr(l, false);
+        expect(l, "]", lexval::LBRACKET);
+        e = static_expr::prov(e);
+        return e;
+
+    case lexval::OPPV:
+        lex(&l);
+        expect(l, "[", lexval::LBRACKET);
+        e = parse_static_expr(l, false);
+        expect(l, "]", lexval::LBRACKET);
+        e = static_expr::oppv(e);
         return e;
 
     default:
@@ -488,18 +540,6 @@ static struct static_expr *
 parse_static_expr(lexer &l)
 {
     return parse_static_expr(l, true);
-}
-
-static void
-expect(lexer &l,
-       const char *expect,
-       enum lexval::lcode e)
-{
-    if (l.lastval.code != e) {
-        fprintf(stderr, "expect %s\n", expect);
-        assert(0);
-    }
-    lex(&l);
 }
 
 
@@ -651,6 +691,8 @@ static int
 eval_static_expr(program &prog,
                  static_expr *e)
 {
+    int val;
+
     switch (e->code) {
 
 #define BIN(code, op)                                   \
@@ -670,6 +712,16 @@ eval_static_expr(program &prog,
         BIN(EQEQ, ==);
         BIN(MOD, %);
 
+    case static_expr::PROV:
+        val = eval_static_expr(prog, e->u.subscript);
+        assert(val < 256);
+        return pro[val].v;
+
+    case static_expr::OPPV:
+        val = eval_static_expr(prog, e->u.subscript);
+        assert(val < 256);
+        return opp[val].v;
+
     case static_expr::CONST_INT:
         return e->u.val;
 
@@ -681,8 +733,7 @@ eval_static_expr(program &prog,
 }
 
 static void
-compile_expr(compiler_state &st,
-             struct commands &coms,
+compile_expr(commands &coms,
              program &prog,
              expr *e,
              int prog_slot)
@@ -693,7 +744,7 @@ compile_expr(compiler_state &st,
         dump_expr(e);
         fprintf(stderr, "\n");
     }
-    expr *iexpanded = expand_integer(prog, e);
+    expr *iexpanded = expand_integer(prog.vars, e);
 
     if (dump) {
         fprintf(stderr, "expand integer = ");
@@ -708,7 +759,7 @@ compile_expr(compiler_state &st,
         dump_expr(sk);
         fprintf(stderr, "\n");
     }
-    compile(st,coms, sk, prog_slot, true);
+    compile(coms, sk, prog_slot, true);
 
     if (dump) {
         dump_commands(coms);
@@ -722,7 +773,6 @@ run(program &prog)
 {
     unsigned int pc = 0;
     stmt *stmts = &prog.stmts[0];
-    compiler_state st;
 
     while (1) {
         if (pc >= prog.stmts.size()) {
@@ -732,10 +782,10 @@ run(program &prog)
 
         switch (stmts[pc].code) {
         case stmt::EXPR: {
-            struct commands commands;
-            compile_expr(st, commands, prog, stmts[pc].u.e, SLOT_PROGRAM);
-            for (unsigned int i=0; i<commands.commands.size(); i++) {
-                write_line(commands.commands[i]);
+            commands commands;
+            compile_expr(commands, prog, stmts[pc].u.e, SLOT_PROGRAM);
+            for (unsigned int i=0; i<commands.size(); i++) {
+                write_line(commands[i]);
                 get_command_line(from_opponent);
             }
         }
@@ -762,10 +812,10 @@ run(program &prog)
             break;
 
         case stmt::SET_SLOT:
-            struct commands commands;
-            compile_expr(st, commands, prog, stmts[pc].u.set_slot.val, stmts[pc].u.set_slot.slot);
-            for (unsigned int i=0; i<commands.commands.size(); i++) {
-                write_line(commands.commands[i]);
+            commands commands;
+            compile_expr(commands, prog, stmts[pc].u.set_slot.val, stmts[pc].u.set_slot.slot);
+            for (unsigned int i=0; i<commands.size(); i++) {
+                write_line(commands[i]);
                 get_command_line(from_opponent);
             }
             break;

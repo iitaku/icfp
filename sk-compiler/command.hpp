@@ -29,9 +29,7 @@ struct command {
 };
 
 
-struct commands {
-    std::vector<command> commands;
-};
+typedef std::vector<command> commands;
 
 void dump_commands(commands const &com);
 struct command get_command_line(FILE *fp);

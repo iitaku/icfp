@@ -94,6 +94,25 @@ struct expr {
 };
 
 void dump_expr(expr *e);
+expr *parse_expr(const char *src);
+
+
+
+/*
+ * 式中に登場する $xyzzy をおきかえることができる
+ * 
+ *  var_map["a"] = 4;
+ * とかすると
+ *  attack $a
+ * は
+ *  attack 4
+ * てなる。
+ *
+ * 自分で式組み立てるときは、
+ *  expr::ref_static_var("a")
+ * を使ってね
+ */
+typedef std::map<std::string, int> var_map_t;
 
 }
 

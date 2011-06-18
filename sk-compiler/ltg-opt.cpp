@@ -6,9 +6,12 @@
 #include <unistd.h>
 
 #include "expr.hpp"
+#include "eval.hpp"
 #include "translators.hpp"
 #include "command.hpp"
 #include "program.hpp"
+#include "solve.hpp"
+#include "proponents.hpp"
 
 namespace copy_kawaii {
 
@@ -55,6 +58,11 @@ dump_expr(expr *e)
 
 void init()
 {
+    for (int i = 0; i < N_SLOTS; i++) {
+        pro.push_back(Slot());
+        opp.push_back(Slot(1));
+    }
+
     from_opponent = stdin;
     to_opponent = stdout;
 }
@@ -75,8 +83,33 @@ char source[1024*1024];
 int
 main(int argc, char **argv)
 {
-    const char *prog_file = "prog.txt";
     init();
+
+    if (argc >= 2) {
+        if (argv[1][0] == '1') {
+            get_command_line(from_opponent);
+        }
+    }
+
+    
+    var_map_t vm;
+
+    zombie_help();
+/*
+    
+    while (1) {
+        commands coms;
+        eval_at(coms, 129, "attack (0)(1)(8192)", vm);
+
+        for (int i=0; i<coms.size(); i++) {
+            write_line(coms[i]);
+            get_command_line(from_opponent);
+        }
+    }
+*/
+
+#if 0
+    const char *prog_file = "prog.txt";
 
     int opt;
 
@@ -116,10 +149,11 @@ main(int argc, char **argv)
     }
     fread(source, 1, sizeof(source), in);
     fclose(in);
+#endif
 
-    program prog = build(coms, source);
+    //program prog = build(coms, source);
     //dump_program(prog);
-    run(prog);
+    //run(prog);
 /*
     if (argc < 2) {
         build(coms, progs[0]);

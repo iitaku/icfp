@@ -15,7 +15,9 @@ set(SOURCE ltg-opt.cpp
            compile.cpp
            program.cpp 
            tool.cpp
-           solve.cpp)
+           solve.cpp
+           eval.cpp
+           zombie-help.cpp)
 
 file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")
