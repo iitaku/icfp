@@ -4,11 +4,31 @@
 #include "expr.hpp"
 #include "command.hpp"
 #include "translators.hpp"
+#include "events.hpp"
 #include <map>
 #include <string>
 
 namespace copy_kawaii {
 
+struct CriticalHandler {
+    bool type_error_critical;
+
+    std::vector<std::string> critical_slots;
+
+    /* リカバリできたら true を返す
+     * コマンドを発行するときは
+     * 相手の状態をコマンドを読み終わった状態で返すこと
+     *
+     * critical_event が複数ある場合に、
+     * 一部だけ処理した場合、それらをcritical_eventから消しておくこと
+     */
+    virtual bool recovery(event_list_t &ciritcal_event) { return false; }
+
+    CriticalHandler()
+        :type_error_critical(true)
+    {
+    }
+};
 
 /* slot 上に expr や 文字列を評価した結果を出力する
  * コマンド{lr,slot,card}列を生成する
@@ -41,14 +61,20 @@ namespace copy_kawaii {
  */
 void eval_at(commands &coms, expr *expr, var_map_t &vm,
              CompileParam const &cp);
+
 void eval_at(commands &coms,
              int slot,
              const char *prog,
              var_map_t &vm,
              CompileParam const &cp);
-void eval_and_run_at( const char *prog,
-                      var_map_t &vm,
-                     CompileParam const &cp);
+
+/* prog を実行し、完了するかもしくは
+ * クリティカルなイベントが発生したら返る
+ */
+event_list_t eval_and_run_at(const char *prog,
+                             var_map_t &vm,
+                             CompileParam const &cp,
+                             CriticalHandler &ch);
 
 /* 文字列 -> expr やりたいときは parse_expr を使う */
 
