@@ -22,6 +22,9 @@
 //#include <emmintrin.h>
 
 //#pragma pack(push,16)
+
+#include "ltg_simulator.h"
+
 #ifdef _MSC_VER
 #include <ctime>
 inline double get_time()
@@ -59,46 +62,7 @@ static bool is_zombie_world = false;
 
 const int N_SLOTS = 256;
 
-class Card {
-public:
-	string method;
-	vector<Card> cards;
-	int ans;
-	int n;
-	bool is_number;
-	int type;
-
-public:
-	Card(const string method_);
-	Card(const string method_, int ans_);
-	Card(const Card& card) {
-		method = card.method;
-		cards = card.cards;
-		ans = card.ans;
-		n = card.n;
-		is_number = card.is_number;
-	}
-	~Card();
-
-	bool set(Card& card, int type_=0);
-	bool func(int& ans_, int type_=0);
-};
-
-class Slot {
-private:
-	int type; // true: proponent, false: opponent
-
-public:
-	Card root;
-	int cnt;
-	int v, f;
-
-	Slot(int type_=0);
-	~Slot();
-
-	void set(Card card, int apply);
-};
-
+// proponent and opponents' slots
 static vector<Slot> pro;
 static vector<Slot> opp;
 
@@ -140,43 +104,53 @@ bool Card::set(Card& card, int type_)
 	type = type_;
 
 	if (is_number) {
-		cerr << method << endl; /////
 		cerr << "Error: number is not function: " << method << endl; ///
 		return false;
 	}
 
 	if (cards.size() < n) {
+		// set argument in function
+
 		if (method == "S") {
+			////////////////////////////////////////////////////////////////////
+			// S f g x
+			//   h <- f x
+			//   y <- g x
+			//   z <- h y
+			//   return z
 			if ((cards.size() == 0 || cards.size() == 1) && card.is_number) {
 				cerr << "Error: S: fisrt / second arg in S should be function, not number" << endl;
 				return false;
 			}
 			cards.push_back(card);
 			if (cards.size() == n) {
+				// h <- f x
 				cards[0].set(cards[2], type);
 				if (cards[0].is_number)
 					cerr << "Error: S: f: need function, not number" << endl;
+				// y <- g x
 				cards[1].set(cards[2], type);
+				// z <- h y
 				cards[0].set(cards[1], type);
+
+				// return z
 				Card c(cards[0]);
 				*this = c;
-#if 0
-				method = cards[0].method;
-				vector<Card> c(cards[0].cards);
-				cards = c;
-				n = cards[0].n;
-				is_number = cards[0].is_number;
-				ans = cards[0].ans;
-#endif
+
 				int x;
 				if (func(x, type)) {
 					is_number = true;
 					ans = x;
 				}
-				return true;
 			}
 			return true;
+
 		} else if (method == "attack") {
+			////////////////////////////////////////////////////////////////////
+			// attack i j n
+			//   v[i] <- v[i] - n
+			//   v[255-j] <- v[255-j] - n * 9 / 10
+			//   return I
 			if ((cards.size() == 0 || cards.size() == 1) && !card.is_number) {
 				cerr << "Error: attack: fisrt / second arg in S should be number, not function" << endl;
 				return false;
@@ -188,20 +162,28 @@ bool Card::set(Card& card, int type_)
 				int x;
 				if (cards[2].func(x, type)) {
 					int nn = x;
+					// v[i] <- v[i] - n
 					if (type == 0) pro[ii].v -= nn;
 					else opp[ii].v -= nn;
+					// v[255-j] <- v[255-j] - n * 9 / 10
 					if (type == 0) opp[N_SLOTS-jj-1].v -= nn * 9 / 10;
 					else pro[N_SLOTS-jj-1].v -= nn * 9 / 10;
 
+					// return I
 					method = "I";
 					cards.clear();
 					n = 1;
 					is_number = false;
 				}
-				return true;
 			}
 			return true;
+
 		} else if (method == "help") {
+			////////////////////////////////////////////////////////////////////
+			// help i j n
+			//   v[i] <- v[i] - n
+			//   v[255-j] <- v[255-j] + n * 11 / 10
+			//   return I
 			if ((cards.size() == 0 || cards.size() == 1) && !card.is_number) {
 				cerr << "Error: help: fisrt / second arg in S should be number, not function" << endl;
 				return false;
@@ -213,86 +195,129 @@ bool Card::set(Card& card, int type_)
 				int x;
 				if (cards[2].func(x, type)) {
 					int nn = x;
+					// v[i] <- v[i] - n
 					if (type == 0) pro[ii].v -= nn;
 					else opp[ii].v -= nn;
+					// v[255-j] <- v[255-j] + n * 11 / 10
 					if (type == 0) pro[jj].v += nn * 11 / 10;
 					else opp[jj].v += nn * 11 / 10;
 
+					// return I
 					method = "I";
 					cards.clear();
 					n = 1;
 					is_number = false;
 				}
-				return true;
 			}
 			return true;
+
 		} else if (method == "K") {
+			////////////////////////////////////////////////////////////////////
+			// K x y
+			//   return x
 			cards.push_back(card);
 			if (cards.size() == n) {
+				// return x
 				Card c(cards[0]);
 				*this = c;
-#if 0
-				is_number = cards[0].is_number;
-				method = cards[0].method;
-				ans = cards[0].ans;
-#endif
 			}
 			return true;
+
 		} else if (method == "put") {
+			////////////////////////////////////////////////////////////////////
+			// put x
+			//   return I
 			method = "I";
 			return true;
+
 		} else if (method == "get") {
+			////////////////////////////////////////////////////////////////////
+			// get i
+			//   y <- f[i]
+			//   return y
 			if (card.is_number) {
+				// y <- f[i]
+				// return y
 				*this = (type == 0 ? pro[card.ans].root : opp[card.ans].root);
 			} else {
 				cards.push_back(card);
 			}
 			return true;
+
 		} else if (method == "succ") {
+			////////////////////////////////////////////////////////////////////
+			// succ n
+			//   m <- n + 1
+			//   return m
 			cards.push_back(card);
 			if (cards.size() == n) {
 				int x;
 				if (cards[0].func(x, type)) {
+					// m <- n + 1
+					// return m
 					ans = x + 1;
 					is_number = true;
 				}
 			}
 			return true;
+
 		} else if (method == "dbl") {
+			////////////////////////////////////////////////////////////////////
+			// dbl n
+			//   m <- n * 2
+			//   return m
 			cards.push_back(card);
 			if (cards.size() == n) {
 				int x;
 				if (cards[0].func(x, type)) {
+					// m <- n * 2
+					// return m
 					ans = x * 2;
 					is_number = true;
 				}
 			}
 			return true;
+
 		} else if (method == "inc") {
 			cards.push_back(card);
+			////////////////////////////////////////////////////////////////////
+			// inc i
+			//   v[i] <- v[i] + 1
+			//   return I
 			if (cards.size() == n) {
 				int x;
 				if (cards[0].func(x, type)) {
 					if (x >= 0 && x < N_SLOTS) {
+						// v[i] <- v[i] + 1
 						if (!is_zombie_world) (type == 0 ? pro[x].v : opp[x].v)++;
 						else opp[x].v--;
 					} else
 						cerr << "Error: inc: exceeded limit: " << x << endl;
 				}
 			}
+
+			// return I
 			method = "I";
 			cards.clear();
 			is_number = false;
 			n = 1;
 			return true;
+
 		} else if (method == "dec") {
+			////////////////////////////////////////////////////////////////////
+			// dec i
+			//   v[255-i] <- v[255-i] - 1
+			//   return I
 			cards.push_back(card);
 			if (cards.size() == n) {
 				int x;
 				if (cards[0].func(x, type)) {
 					if (x >= 0 && x < N_SLOTS) {
-						if (!is_zombie_world) opp[N_SLOTS-x-1].v--;
-						else {
+						// v[255-i] <- v[255-i] - 1
+						if (!is_zombie_world) {
+							if (type == 0) opp[N_SLOTS-x-1].v--;
+							else pro[N_SLOTS-x-1].v--;
+						} else {
 							if (type == 0) pro[N_SLOTS-x-1].v++;
 							else opp[N_SLOTS-x-1].v++;
 						}
@@ -300,36 +325,57 @@ bool Card::set(Card& card, int type_)
 						cerr << "Error: dec: exceeded limit: " << x << endl;
 				}
 			}
+
+			// return I
 			method = "I";
 			cards.clear();
 			is_number = false;
 			n = 1;
 			return true;
+
 		} else if (method == "copy") {
-			if (card.is_number) {
-				*this = opp[card.ans].root;
-			} else {
-				cards.push_back(card);
-			}
+			////////////////////////////////////////////////////////////////////
+			// copy i
+			//   y <- f'[i]
+			//   return y
+
+			// y <- f'[i]
+			// return y
+			if (card.is_number) *this = (type == 0 ? opp[card.ans].root : pro[card.ans].root);
+			else cards.push_back(card);
 			return true;
+
 		} else if (method == "revive") {
+			////////////////////////////////////////////////////////////////////
+			// revice i
+			//   v[i] <- 1
+			//   return I
 			cards.push_back(card);
 			if (card.is_number) {
 				if (card.ans >= 0 && card.ans < N_SLOTS) {
 					if ((type == 0 ? pro[card.ans].v : opp[card.ans].v) <= 0) {
+						// v[i] <- 1
 						if (type == 0) pro[card.ans].v = 1;
 						else opp[card.ans] = 1;
 					}
 				} else {
 					cerr << "Error: copy: invalid slot number: " << card.ans << endl; ///
 				}
+
+				// return I
 				method = "I";
 				cards.clear();
 				n = 1;
 				is_number = false;
 			}
 			return true;
+
 		} else if (method == "zombie") {
+			////////////////////////////////////////////////////////////////////
+			// zombie i x
+			//   f'[255-i] <- x
+			//   v'[255-i] < -1
+			//   return I
 			if (cards.size() == 0 && !card.is_number) {
 				cerr << "Error: zombie: fisrt arg should be number, not function" << endl;
 				return false;
@@ -337,27 +383,43 @@ bool Card::set(Card& card, int type_)
 			cards.push_back(card);
 			if (cards.size() == n) {
 				int ii = cards[0].ans;
-				if (ii >= 0 && ii < N_SLOTS && opp[N_SLOTS-ii-1].v <= 0) {
-					opp[N_SLOTS-ii-1].root = cards[1];
+				if (ii >= 0 && ii < N_SLOTS && (type == 0 ? opp[N_SLOTS-ii-1].v : pro[N_SLOTS-ii-1].v)<= 0) {
+					if (type == 0) opp[N_SLOTS-ii-1].root = cards[1];
+					else pro[N_SLOTS-ii-1].root = cards[1];
 					int x;
+					// f'[255-i] <- x
 					is_zombie_world = true;
-					opp[N_SLOTS-ii-1].root.func(x, type);
+					if (type == 0) opp[N_SLOTS-ii-1].root.func(x, type);
+					else pro[N_SLOTS-ii-1].root.func(x, type);
+					// v'[255-i] < -1
 					is_zombie_world = false;
-					opp[N_SLOTS-ii-1].v = -1;
+					if (type == 0) opp[N_SLOTS-ii-1].v = -1;
+					else pro[N_SLOTS-ii-1].v = -1;
 				} else {
-					cerr << "Error: zombie: invalid values: " << ii << ", " << opp[N_SLOTS-ii-1].v << endl; ///
+					cerr << "Error: zombie: invalid values: " << ii << ", " << (type == 0 ? opp[N_SLOTS-ii-1].v : pro[N_SLOTS-ii-1].v) << endl; ///
 				}
+
+				// return I
 				method = "I";
 				cards.clear();
 				n = 1;
 				is_number = false;
 			}
 			return true;
+
 		} else if (method == "I") {
+			////////////////////////////////////////////////////////////////////
+			// I x
+			//   return x
+
+			// return x
 			*this = card;
 			return true;
 		}
+
 	} else {
+		// put function in last argument
+
 		if (cards[n-1].set(card, type)) {
 			int x;
 			if (method == "get") {
@@ -523,13 +585,13 @@ int main()
 #if 0
 	pro[0].set(Card("get"), 1);
 	pro[0].set(Card("put"), 1);
-#if 1
+
 	pro[0].set(Card("S"), 1);
 	pro[0].set(Card("succ"), 2);
 	pro[0].set(Card("succ"), 2);
 	pro[0].set(Card("zero"), 2);
 	pro[0].set(Card("succ"), 1);
-#endif
+
 	//pro[0].set(Card("zero"), 2);
 	//pro[0].set(Card("get"), 1);
 	//pro[0].set(Card("zero"), 2);
@@ -540,6 +602,7 @@ int main()
 	pro[0].set(Card("I"), 1);
 	pro[0].set(Card("I"), 1);
 	pro[0].set(Card("I"), 1);
+
 #if 0
 	pro[0].set(Card("K"), 1);
 	pro[0].set(Card("zero"), 2);
@@ -548,6 +611,7 @@ int main()
 	pro[0].set(Card("succ"), 1);
 	pro[0].set(Card("zero"), 2);
 #endif  
+
 	//pro[0].set(Card("attack"), 1);
 	pro[0].set(Card("help"), 1);
 	pro[0].set(Card("number", 10), 2);
@@ -566,7 +630,8 @@ int main()
 	pro[0].set(Card("zero"), 2);
 	pro[0].set(Card("zero"), 2);
 #endif
-#if 0
+
+#if 0  // test for get
 	pro[0].set(Card("get"), 2);
 	pro[0].set(Card("dbl"), 2);
 	pro[0].set(Card("succ"), 2);
@@ -574,14 +639,16 @@ int main()
 	pro[0].set(Card("succ"), 2);
 	pro[0].set(Card("zero"), 2);
 #endif
-#if 0
+
+#if 0  // test for zombie
 	pro[0].set(Card("zero"), 2);
 	pro[0].set(Card("zombie"), 1);
 	pro[0].set(Card("S"), 1);
 	pro[0].set(Card("succ"), 2);
 	pro[0].set(Card("zero"), 2);
 #endif
-#if 0
+
+#if 0  // test for SKKI
 	pro[0].set(Card("S"), 2);
 	pro[0].set(Card("K"), 2);
 	pro[0].set(Card("K"), 2);
@@ -589,11 +656,8 @@ int main()
 	pro[0].set(Card("zero"), 2);
 	pro[0].set(Card("succ"), 1);
 #endif
-#if 0
-	pro[0].set(Card("I"), 2);
-	pro[0].set(Card("zero"), 2);
-#endif
-#if 1
+
+#if 1  // test for zombie-KS attack
 	opp[255].v = 0;
 	pro[0].set(Card("zombie"), 2);
 	pro[0].set(Card("zero"), 2);
@@ -610,6 +674,13 @@ int main()
 	pro[0].set(Card("zero"), 2);
 #endif
 
+#if 0  // test for debug
+	pro[0].set(Card("put"), 1);
+	pro[0].set(Card("zero"), 2);
+	pro[0].set(Card("succ"), 1);
+	pro[0].set(Card("dbl"), 1);
+#endif
+
 	int ans = 0;
 	cerr << "---" << endl; ////
 	cerr << pro[0].root.method << endl; /////
@@ -621,7 +692,7 @@ int main()
 
 	cerr << pro[1].v << endl; /////
 
-#if 1
+#if 1  // test for opponent
 	opp[0].set(Card("S"), 2);
 	opp[0].set(Card("K"), 2);
 	opp[0].set(Card("K"), 2);
@@ -629,6 +700,7 @@ int main()
 	opp[0].set(Card("succ"), 1);
 	opp[0].set(Card("zero"), 2);
 #endif
+
 	cerr << "---" << endl; ////
 	cerr << opp[0].root.method << endl; /////
 	cerr << boolalpha << opp[0].root.func(ans) << endl; /////
