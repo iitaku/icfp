@@ -687,7 +687,7 @@ compile_expr(compiler_state &st,
              expr *e,
              int prog_slot)
 {
-    bool dump = true;
+    bool dump = false;
     if (dump) {
         fprintf(stderr, "orig = ");
         dump_expr(e);

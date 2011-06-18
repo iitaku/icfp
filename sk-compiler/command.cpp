@@ -79,7 +79,7 @@ get_command_line(FILE *fp)
 
 void
 write_line(command const &com) {
-    bool dump = 1;
+    bool dump = 0;
 
     if (com.lr == LEFT) {
         fprintf(to_opponent, "1\n");
