@@ -14,6 +14,13 @@ expr *expand_sk(const expr *src,
                 expr *head,
                 bool *change);
 
+
+struct CompileParam {
+    enum lr_code innermost_lr;
+    int imm_idx;
+    int prog_slot;
+};
+
 void compile(commands &commands,
              const expr *src,
              int prog_slot,

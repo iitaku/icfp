@@ -4,6 +4,7 @@
 namespace copy_kawaii {
 
 void zombie_help();
+void zombie_help_rot();
 
 }
 

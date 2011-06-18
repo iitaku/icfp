@@ -38,14 +38,15 @@ namespace copy_kawaii {
  *
  * 途中結果見たいときは、中のdumpをtrueにする
  */
-void eval_at(commands &coms,int slot, expr *expr, var_map_t &vm);
-
-void eval_at(commands &coms,
+void eval_at(enum lr_code lr,
+             commands &coms,int slot, expr *expr, var_map_t &vm);
+void eval_at(enum lr_code lr,
+             commands &coms,
              int slot,
              const char *prog,
              var_map_t &vm);
-
-void eval_and_run_at(int slot, const char *prog, var_map_t &vm);
+void eval_and_run_at(enum lr_code lr,
+                     int slot, const char *prog, var_map_t &vm);
 
 /* 文字列 -> expr やりたいときは parse_expr を使う */
 

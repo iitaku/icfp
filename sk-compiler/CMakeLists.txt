@@ -29,8 +29,14 @@ add_executable(${EXEC_NAME} ${SOURCE})
 add_executable(pro ${SOURCE})
 add_executable(opp ${SOURCE})
 
+add_executable(zombie-help ${SOURCE})
+add_executable(zombie-help-rot ${SOURCE})
+
 set_target_properties(pro PROPERTIES COMPILE_FLAGS "-D PRO_SCRIPT")
 set_target_properties(opp PROPERTIES COMPILE_FLAGS "-D OPP_SCRIPT")
+
+set_target_properties(zombie-help PROPERTIES COMPILE_FLAGS "-D ZOMBIE_HELP")
+set_target_properties(zombie-help-rot PROPERTIES COMPILE_FLAGS "-D ZOMBIE_HELP_ROT")
 
 set(PKG_DIR ${EXEC_NAME}.d)
 

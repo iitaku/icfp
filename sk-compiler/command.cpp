@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define ENABLE_SIM 0
+#define ENABLE_SIM 1
 
 namespace copy_kawaii {
 FILE *from_opponent;

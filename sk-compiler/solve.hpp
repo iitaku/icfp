@@ -17,14 +17,22 @@ public:
 	int ans;
 	int n;
 	bool is_number;
+	int type;
 
 public:
 	Card(const std::string method_);
 	Card(const std::string method_, int ans_);
+	Card(const Card& card) {
+		method = card.method;
+		cards = card.cards;
+		ans = card.ans;
+		n = card.n;
+		is_number = card.is_number;
+	}
 	~Card();
 
-	bool set(Card& card);
-	bool func(int& ans_);
+	bool set(Card& card, int type_=0);
+	bool func(int& ans_, int type_=0);
 };
 
 class Slot {

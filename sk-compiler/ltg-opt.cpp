@@ -94,7 +94,11 @@ main(int argc, char **argv)
     
     var_map_t vm;
 
+#ifdef ZOMBIE_HELP
     zombie_help();
+#elif defined ZOMBIE_HELP_ROT
+    zombie_help_rot();
+#endif
 /*
     
     while (1) {

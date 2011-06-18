@@ -7,7 +7,8 @@
 namespace copy_kawaii {
 
 void
-eval_at(commands &coms, int slot,
+eval_at(enum lr_code lr,
+        commands &coms, int slot,
         expr *expr, var_map_t &vm)
 {
     bool dump = false;
@@ -34,24 +35,27 @@ eval_at(commands &coms, int slot,
 }
 
 void
-eval_at(commands &coms, int slot,
+eval_at(enum lr_code lr,
+        commands &coms, int slot,
         const char *prog, var_map_t &vm)
 {
     expr *e = parse_expr(prog);
-    eval_at(coms, slot, e, vm);
+    eval_at(lr, coms, slot, e, vm);
 }
 
 
 void
-eval_and_run_at(int slot,
+eval_and_run_at(enum lr_code lr,
+                int slot,
                 const char *prog,
                 var_map_t &vm)
 {
     commands coms;
-    eval_at(coms, slot, prog, vm);
+    eval_at(lr, coms, slot, prog, vm);
 
     for (int i=0; i<coms.size(); i++) {
         write_line(coms[i]);
+        get_command_line(from_opponent);
     }
 }
 
