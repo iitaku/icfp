@@ -23,7 +23,7 @@ public:
 	int type;
 
 public:
-    /**
+	/**
 	 * @brief constructor
 	 * @param[in] method_  card type
 	 * @param[in] ans_     set number to card (number card only)
@@ -39,14 +39,14 @@ public:
 	}
 	~Card();
 
-    /**
+	/**
 	 * @brief application applies (as a function) a card
 	 * @param[in] card_    card
 	 * @param[in] type_    proponent (0) or opponent (1)
 	 */
 	bool set(Card& card, int type_=0);
 
-    /**
+	/**
 	 * @brief execute function
 	 * @param[out] ans_    return value from function
 	 * @param[in]  type_   proponent (0) or opponent (1)
@@ -72,14 +72,14 @@ public:
 	// field value (not implement yet; use slots[*].root.ans or slots[*].func(ans))
 	int f;
 
-    /**
+	/**
 	 * @brief constructor
 	 * @param[in] type_    proponent (0) or opponent (1)
 	 */
 	Slot(int type_=0);
 	~Slot();
 
-    /**
+	/**
 	 * @brief set a card on a slot
 	 * @param[in] card_    card
 	 * @param[in] apply_   left application (1) or right application (2)
