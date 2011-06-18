@@ -163,11 +163,21 @@ bool Card::set(Card& card, int type_)
 				if (cards[2].func(x, type)) {
 					int nn = x;
 					// v[i] <- v[i] - n
-					if (type == 0) pro[ii].v -= nn;
-					else opp[ii].v -= nn;
+					if (type == 0) {
+						pro[ii].v -= nn;
+						if (pro[ii].v < 0) pro[ii].v = 0;
+					} else {
+						opp[ii].v -= nn;
+						if (opp[ii].v < 0) opp[ii].v = 0;
+					}
 					// v[255-j] <- v[255-j] - n * 9 / 10
-					if (type == 0) opp[N_SLOTS-jj-1].v -= nn * 9 / 10;
-					else pro[N_SLOTS-jj-1].v -= nn * 9 / 10;
+					if (type == 0) {
+						opp[N_SLOTS-jj-1].v -= nn * 9 / 10;
+						if (opp[N_SLOTS-jj-1].v < 0) opp[N_SLOTS-jj-1].v = 0;
+					} else {
+						pro[N_SLOTS-jj-1].v -= nn * 9 / 10;
+						if (pro[N_SLOTS-jj-1].v < 0) pro[N_SLOTS-jj-1].v = 0;
+					}
 
 					// return I
 					method = "I";
@@ -196,11 +206,21 @@ bool Card::set(Card& card, int type_)
 				if (cards[2].func(x, type)) {
 					int nn = x;
 					// v[i] <- v[i] - n
-					if (type == 0) pro[ii].v -= nn;
-					else opp[ii].v -= nn;
+					if (type == 0) {
+						pro[ii].v -= nn;
+						if (pro[ii].v < 0) pro[ii].v = 0;
+					} else {
+						opp[ii].v -= nn;
+						if (opp[ii].v < 0) opp[ii].v = 0;
+					}
 					// v[255-j] <- v[255-j] + n * 11 / 10
-					if (type == 0) pro[jj].v += nn * 11 / 10;
-					else opp[jj].v += nn * 11 / 10;
+					if (type == 0) {
+						pro[jj].v += nn * 11 / 10;
+						if (pro[jj].v > 65535) pro[jj].v = 65535;
+					} else {
+						opp[jj].v += nn * 11 / 10;
+						if (opp[jj].v > 65535) opp[jj].v = 65535;
+					}
 
 					// return I
 					method = "I";
@@ -256,6 +276,7 @@ bool Card::set(Card& card, int type_)
 					// m <- n + 1
 					// return m
 					ans = x + 1;
+					if (ans > 65535) ans = 65535;
 					is_number = true;
 				}
 			}
@@ -273,6 +294,7 @@ bool Card::set(Card& card, int type_)
 					// m <- n * 2
 					// return m
 					ans = x * 2;
+					if (ans > 65535) ans = 65535;
 					is_number = true;
 				}
 			}
@@ -289,8 +311,13 @@ bool Card::set(Card& card, int type_)
 				if (cards[0].func(x, type)) {
 					if (x >= 0 && x < N_SLOTS) {
 						// v[i] <- v[i] + 1
-						if (!is_zombie_world) (type == 0 ? pro[x].v : opp[x].v)++;
-						else opp[x].v--;
+						if (!is_zombie_world) {
+							if (type == 0 && pro[x].v > 0 && pro[x].v < 65535) pro[x].v++;
+							else if (type == 1 && opp[x].v > 0 && opp[x].v < 65535) opp[x].v++;
+						} else {
+							if (type == 0 && opp[x].v > 0 && opp[x].v < 65535) opp[x].v--;
+							else if (type == 1 && pro[x].v > 0 && pro[x].v < 65535) pro[x].v--;
+						}
 					} else
 						cerr << "Error: inc: exceeded limit: " << x << endl;
 				}
@@ -315,11 +342,11 @@ bool Card::set(Card& card, int type_)
 					if (x >= 0 && x < N_SLOTS) {
 						// v[255-i] <- v[255-i] - 1
 						if (!is_zombie_world) {
-							if (type == 0) opp[N_SLOTS-x-1].v--;
-							else pro[N_SLOTS-x-1].v--;
+							if (type == 0 && opp[N_SLOTS-x-1].v > 0) opp[N_SLOTS-x-1].v--;
+							else if (type == 1 && pro[N_SLOTS-x-1].v > 0) pro[N_SLOTS-x-1].v--;
 						} else {
-							if (type == 0) pro[N_SLOTS-x-1].v++;
-							else opp[N_SLOTS-x-1].v++;
+							if (type == 0 && pro[N_SLOTS-x-1].v > 0) pro[N_SLOTS-x-1].v++;
+							else if (type == 1 && opp[N_SLOTS-x-1].v > 0) opp[N_SLOTS-x-1].v++;
 						}
 					} else
 						cerr << "Error: dec: exceeded limit: " << x << endl;
@@ -457,18 +484,26 @@ bool Card::set(Card& card, int type_)
 						if (!is_zombie_world) {
 							if (type == 0) {
 								pro[ii].v -= nn;
+								if (pro[ii].v < 0) pro[ii].v = 0;
 								opp[N_SLOTS-jj-1].v -= nn * 9 / 10;
+								if (opp[N_SLOTS-jj-1].v < 0) opp[N_SLOTS-jj-1].v = 0;
 							} else {
 								opp[ii].v -= nn;
+								if (opp[ii].v < 0) opp[ii].v = 0;
 								pro[N_SLOTS-jj-1].v -= nn * 9 / 10;
+								if (pro[N_SLOTS-jj-1].v < 0) pro[N_SLOTS-jj-1].v = 0;
 							}
 						} else {
 							if (type == 0) {
 								opp[ii].v -= nn;
+								if (opp[ii].v < 0) opp[ii].v = 0;
 								pro[N_SLOTS-jj-1].v += nn * 9 / 10;
+								if (pro[N_SLOTS-jj-1].v > 65535) pro[N_SLOTS-jj-1].v = 65535;
 							} else {
 								pro[ii].v -= nn;
+								if (pro[ii].v < 0) pro[ii].v = 0;
 								opp[N_SLOTS-jj-1].v += nn * 9 / 10;
+								if (opp[N_SLOTS-jj-1].v > 65535) opp[N_SLOTS-jj-1].v = 65535;
 							}
 						}
 
@@ -488,18 +523,26 @@ bool Card::set(Card& card, int type_)
 						if (!is_zombie_world) {
 							if (type == 0) {
 								pro[ii].v -= nn;
+								if (pro[ii].v < 0) pro[ii].v = 0;
 								pro[jj].v += nn * 11 / 10;
+								if (pro[jj].v > 65535) pro[jj].v = 65535;
 							} else {
 								opp[ii].v -= nn;
+								if (opp[ii].v < 0) opp[ii].v = 0;
 								opp[jj].v += nn * 11 / 10;
+								if (opp[jj].v > 65535) opp[jj].v = 65535;
 							}
 						} else {
 							if (type == 0) {
 								opp[ii].v -= nn;
+								if (opp[ii].v < 0) opp[ii].v = 0;
 								opp[jj].v -= nn * 11 / 10;
+								if (opp[jj].v < 0) opp[jj].v = 0;
 							} else {
 								pro[ii].v -= nn;
+								if (pro[ii].v < 0) pro[ii].v = 0;
 								pro[jj].v -= nn * 11 / 10;
+								if (pro[jj].v < 0) pro[jj].v = 0;
 							}
 						}
 
@@ -519,6 +562,7 @@ bool Card::set(Card& card, int type_)
 				ans = x;
 				if (method == "succ") ans++;
 				else if (method == "dbl") ans *= 2;
+				if (ans > 65535) ans = 65535;
 			}
 			return true;
 		} else {
