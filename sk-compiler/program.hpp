@@ -13,6 +13,12 @@ struct static_expr {
         MINUS,
         MUL,
         DIV,
+        LE,
+        GE,
+        LT,
+        GT,
+        NE,
+        EQEQ,
         CONST_INT,
     } code;
 
@@ -55,6 +61,7 @@ struct static_expr {
 struct stmt {
     enum {
         GOTO,
+        GOTO_IF,
         EXPR,
         LABEL,
         SET_VAR,
@@ -67,6 +74,11 @@ struct stmt {
             char *var_name;
             static_expr *expr;
         } set_var;
+
+        struct {
+            char *label;
+            static_expr *expr;
+        } goto_if;
     }u;
 
     static stmt goto_(char *label)
@@ -76,6 +88,14 @@ struct stmt {
         ret.u.label = label;
         return ret;
     }
+    static stmt goto_if(char *label, static_expr *e) {
+        stmt ret;
+        ret.code = GOTO_IF;
+        ret.u.goto_if.label = label;
+        ret.u.goto_if.expr = e;
+        return ret;
+    }
+
     static stmt label(char *label)
     {
         stmt ret;

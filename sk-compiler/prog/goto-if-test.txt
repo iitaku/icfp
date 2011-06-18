@@ -1,0 +1,8 @@
+set xyzzy = 0
+
+label b
+
+set xyzzy = $xyzzy + 1
+attack ($xyzzy)(0)(1)
+goto_if b $xyzzy == 4
+

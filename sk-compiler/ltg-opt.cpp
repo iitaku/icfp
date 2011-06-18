@@ -64,20 +64,35 @@ char source[1024*1024];
 int
 main(int argc, char **argv)
 {
+    const char *prog_file = "prog/prog.txt";
     init();
+
+    int opt;
+
+    while ((opt = getopt(argc, argv, "p:")) != -1) {
+        switch (opt) {
+        case 'p':
+            prog_file = optarg;
+            break;
+
+        default:
+            fprintf(stderr, "usage : ltg-opt [-p prog.txt]\n");
+            return 1;
+        }
+    }
 
     //fprintf(stderr, "%s\n", argv[1]);
     commands coms;
 
-    if (argc >= 2) {
-        if (argv[1][0] == '1') {
+    if (optind < argc) {
+        if (argv[optind][0] == '1') {
             get_command_line(from_opponent);
         }
     }
 
-    FILE *in = fopen("prog.txt", "rb");
+    FILE *in = fopen(prog_file, "rb");
     if (in == NULL) {
-        perror("prog.txt");
+        perror(prog_file);
         return 1;
     }
     fread(source, 1, sizeof(source), in);

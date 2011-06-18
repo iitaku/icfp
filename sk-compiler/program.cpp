@@ -21,11 +21,19 @@ struct lexval {
         SET,
         SYM,
         END,
+        GOTO_IF,
         PLUS,
         MINUS,
         MUL,
         DIV,
         EQ,
+        EQEQ,
+        NE,
+        LT,
+        GT,
+        LE,
+        GE,
+        EXCLAM,
         DOLLER
     } code;
 
@@ -138,6 +146,9 @@ lex(struct lexer *l)
                             if (strcmp("goto", symbuf) == 0) {
                                 return l->lastval = lexval(lexval::GOTO);
                             }
+                            if (strcmp("goto_if", symbuf) == 0) {
+                                return l->lastval = lexval(lexval::GOTO_IF);
+                            }
                             if (strcmp("label", symbuf) == 0) {
                                 return l->lastval = lexval(lexval::LABEL);
                             }
@@ -182,8 +193,50 @@ lex(struct lexer *l)
                 return l->lastval = lexval(lexval::DIV);
             case '+':
                 return l->lastval = lexval(lexval::PLUS);
-            case '=':
-                return l->lastval = lexval(lexval::EQ);
+            case '<': {
+                int c = lgetc(l);
+                if (c == '=') {
+                    return l->lastval = lexval(lexval::LE);
+                } else {
+                    lungetc(l, c);
+                    return l->lastval = lexval(lexval::LT);
+                }
+            }
+                break;
+
+            case '>': {
+                int c = lgetc(l);
+                if (c == '=') {
+                    return l->lastval = lexval(lexval::GE);
+                } else {
+                    lungetc(l, c);
+                    return l->lastval = lexval(lexval::GT);
+                }
+            }
+                break;
+
+            case '!': {
+                int c = lgetc(l);
+                if (c == '=') {
+                    return l->lastval = lexval(lexval::NE);
+                } else {
+                    lungetc(l, c);
+                    return l->lastval = lexval(lexval::EXCLAM);
+                }
+            }
+                break;
+
+            case '=': {
+                int c = lgetc(l);
+                if (c == '=') {
+                    return l->lastval = lexval(lexval::EQEQ);
+                } else {
+                    lungetc(l, c);
+                    return l->lastval = lexval(lexval::EQ);
+                }
+            }
+                break;
+
             case '-':
                 return l->lastval = lexval(lexval::MINUS);
             case '$':
@@ -291,6 +344,9 @@ parse_expr(lexer &l)
     return parse_expr(&l, true);
 }
 
+static static_expr *parse_static_expr(lexer &l,
+                                      bool is_toplev);
+
 static static_expr *
 static_term(lexer &l)
 {
@@ -308,6 +364,16 @@ static_term(lexer &l)
             assert(0);
         }
         e = static_expr::var_ref(l.lastval.u.sym);
+        lex(&l);
+        return e;
+
+    case lexval::LPAR:
+        lex(&l);
+        e = parse_static_expr(l, false);
+        if (l.lastval.code != lexval::RPAR) {
+            fprintf(stderr, "unmatch ()\n");
+            assert(0);
+        }
         lex(&l);
         return e;
 
@@ -351,6 +417,20 @@ parse_static_expr(lexer &l,
             lex(&l);
             break;
 
+#define BIN(OP)                                 \
+            case lexval::OP:                    \
+                c = static_expr::OP;            \
+            lex(&l);                            \
+            break;
+
+            BIN(LE);
+            BIN(GE);
+            BIN(LT);
+            BIN(GT);
+            BIN(NE);
+            BIN(EQEQ);
+#undef BIN
+
         default:
             return e;
         }
@@ -391,6 +471,24 @@ parse(const char *source,
                 assert(0);
             }
             lex(&l);
+            break;
+
+        case lexval::GOTO_IF: {
+            lex(&l);
+            if (l.lastval.code != lexval::SYM) {
+                fprintf(stderr, "unexpected token near goto\n");
+                assert(0);
+            }
+            char *label = l.lastval.u.sym;
+            lex(&l);
+            struct static_expr *se = parse_static_expr(l);
+            s = stmt::goto_if(label, se);
+            if (l.lastval.code != lexval::EOL) {
+                fprintf(stderr, "EOL expected\n");
+                assert(0);
+            }
+            lex(&l);
+        }
             break;
 
         case lexval::LABEL:
@@ -472,18 +570,22 @@ eval_static_expr(program &prog,
                  static_expr *e)
 {
     switch (e->code) {
-    case static_expr::PLUS:
-        return eval_static_expr(prog, e->u.bin.l) +
-            eval_static_expr(prog, e->u.bin.r);
-    case static_expr::MUL:
-        return eval_static_expr(prog, e->u.bin.l) *
-            eval_static_expr(prog, e->u.bin.r);
-    case static_expr::DIV:
-        return eval_static_expr(prog, e->u.bin.l) /
-            eval_static_expr(prog, e->u.bin.r);
-    case static_expr::MINUS:
-        return eval_static_expr(prog, e->u.bin.l) -
-            eval_static_expr(prog, e->u.bin.r);
+
+#define BIN(code, op)                                   \
+        case static_expr::code:                         \
+        return eval_static_expr(prog, e->u.bin.l) op    \
+        eval_static_expr(prog, e->u.bin.r);
+
+        BIN(PLUS, +);
+        BIN(MUL, *);
+        BIN(DIV, /);
+        BIN(MINUS, -);
+        BIN(GE, >=);
+        BIN(GT, >);
+        BIN(LE, <=);
+        BIN(LT, <);
+        BIN(NE, !=);
+        BIN(EQEQ, ==);
 
     case static_expr::CONST_INT:
         return e->u.val;
@@ -498,11 +600,16 @@ eval_static_expr(program &prog,
 void
 run(program &prog)
 {
-    int pc = 0;
+    unsigned int pc = 0;
     stmt *stmts = &prog.stmts[0];
     compiler_state st;
 
     while (1) {
+        if (pc >= prog.stmts.size()) {
+            fprintf(stderr, "program reachs to eof!!\n");
+            return;
+        }
+
         switch (stmts[pc].code) {
         case stmt::EXPR: {
             expr *e = stmts[pc].u.e;
@@ -543,6 +650,13 @@ run(program &prog)
         case stmt::GOTO:
             pc = lookup_label(prog, stmts[pc].u.label);
             continue;
+
+        case stmt::GOTO_IF:
+            if (eval_static_expr(prog, stmts[pc].u.goto_if.expr)) {
+                pc = lookup_label(prog, stmts[pc].u.goto_if.label);
+                continue;
+            }
+            break;
         }
 
         pc++;
@@ -562,6 +676,10 @@ dump_program(program &prog)
 
         case stmt::LABEL:
             fprintf(stderr, "label %s\n", s.u.label);
+            break;
+
+        case stmt::GOTO_IF:
+            fprintf(stderr, "goto_if label=%s expr=...\n", s.u.goto_if.label);
             break;
 
         case stmt::SET_VAR:
