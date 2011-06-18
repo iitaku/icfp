@@ -669,7 +669,7 @@ parse(const char *source,
 quit:
     return ret;
 }
-
+#if 0
 static int
 lookup_label(program &prog,
              const char *src)
@@ -736,7 +736,7 @@ static void
 compile_expr(commands &coms,
              program &prog,
              expr *e,
-             int prog_slot)
+             CompileParam const &cp)
 {
     bool dump = false;
     if (dump) {
@@ -759,13 +759,12 @@ compile_expr(commands &coms,
         dump_expr(sk);
         fprintf(stderr, "\n");
     }
-    compile(coms, sk, prog_slot, true);
+    compile(coms, sk, cp);
 
     if (dump) {
         dump_commands(coms);
     }
 }
-
 
 
 void
@@ -825,6 +824,7 @@ run(program &prog)
     }
 }
 
+#endif
 void
 dump_program(program &prog)
 {

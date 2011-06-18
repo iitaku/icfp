@@ -17,14 +17,22 @@ expr *expand_sk(const expr *src,
 
 struct CompileParam {
     enum lr_code innermost_lr;
-    int imm_idx;
+    int imm_slot;
     int prog_slot;
+
+    CompileParam(enum lr_code lr,
+                 int imm_slot,
+                 int prog_slot)
+        :innermost_lr(lr),
+         imm_slot(imm_slot),
+         prog_slot(prog_slot)
+    {}
 };
 
 void compile(commands &commands,
              const expr *src,
-             int prog_slot,
-             bool top_level);
+             CompileParam const &cp);
+
 
 }
 

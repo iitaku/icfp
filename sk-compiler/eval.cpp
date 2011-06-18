@@ -7,13 +7,12 @@
 namespace copy_kawaii {
 
 void
-eval_at(enum lr_code lr,
-        commands &coms, int slot,
-        expr *expr, var_map_t &vm)
+eval_at(commands &coms,
+        expr *expr, var_map_t &vm,
+        CompileParam const &cp)
 {
     bool dump = false;
     struct expr *iexpanded = expand_integer(vm, expr);
-    assert(slot != 0);
 
     if (dump) {
         fprintf(stderr, "expand integer = ");
@@ -27,7 +26,7 @@ eval_at(enum lr_code lr,
         dump_expr(sk);
         fprintf(stderr, "\n");
     }
-    compile(coms, sk, slot, true);
+    compile(coms, sk, cp);
 
     if (dump) {
         dump_commands(coms);
@@ -35,23 +34,22 @@ eval_at(enum lr_code lr,
 }
 
 void
-eval_at(enum lr_code lr,
-        commands &coms, int slot,
-        const char *prog, var_map_t &vm)
+eval_at(commands &coms,
+        const char *prog, var_map_t &vm,
+        CompileParam const &cp)
 {
     expr *e = parse_expr(prog);
-    eval_at(lr, coms, slot, e, vm);
+    eval_at(coms, e, vm, cp);
 }
 
 
 void
-eval_and_run_at(enum lr_code lr,
-                int slot,
-                const char *prog,
-                var_map_t &vm)
+eval_and_run_at(const char *prog,
+                var_map_t &vm,
+                CompileParam const &cp)
 {
     commands coms;
-    eval_at(lr, coms, slot, prog, vm);
+    eval_at(coms, prog, vm, cp);
 
     for (int i=0; i<coms.size(); i++) {
         write_line(coms[i]);
