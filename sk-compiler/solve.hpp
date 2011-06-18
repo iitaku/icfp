@@ -34,8 +34,8 @@ public:
 	 * @param[in] method_  card type
 	 * @param[in] ans_     set number to card (number card only)
 	 */
-	Card(const std::string method_);
-	Card(const std::string method_, int ans_);
+	Card(const std::string& method_);
+	Card(const std::string& method_, int ans_);
 	Card(const Card& card) {
 		method = card.method;
 		cards = card.cards;
