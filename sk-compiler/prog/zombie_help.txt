@@ -8,13 +8,13 @@ set e1 = $e + 1
 
 attack ($m0)($e)(8192)
 attack ($m1)($e)(3072)
-set_slot @0 = (S (K (help ($e) ($e1))) (K ($damage)))
-zombie ($e)(@0)
-
+set_slot @9 = (S (K (help ($e) ($e1))) (K ($damage)))
+zombie ($e)(@9)
+set_slot @9 = clear
 set e = $e + 1
 
 goto_if a $damage == 65535
-set damage = $dameage * 9 / 10 + 10000
+set damage = $damage * 11 / 10 + 10000
 goto_if a $damage == 65535
 goto_if a $damage < 65535
 set damage = 65535
