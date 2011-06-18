@@ -39,7 +39,8 @@ struct lexval {
         EXCLAM,
         DOLLER,
         AT,
-        SET_SLOT
+        SET_SLOT,
+        MOD
     } code;
 
     union {
@@ -251,6 +252,8 @@ lex(struct lexer *l)
                 return l->lastval = lexval(lexval::DOLLER);
             case '@':
                 return l->lastval = lexval(lexval::AT);
+            case '%':
+                return l->lastval = lexval(lexval::MOD);
 
             default:
                 break;
@@ -454,6 +457,7 @@ parse_static_expr(lexer &l,
             BIN(GT);
             BIN(NE);
             BIN(EQEQ);
+            BIN(MOD);
 #undef BIN
 
         default:
@@ -649,6 +653,7 @@ eval_static_expr(program &prog,
         BIN(LT, <);
         BIN(NE, !=);
         BIN(EQEQ, ==);
+        BIN(MOD, %);
 
     case static_expr::CONST_INT:
         return e->u.val;

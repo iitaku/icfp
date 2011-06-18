@@ -20,6 +20,7 @@ struct static_expr {
         NE,
         EQEQ,
         CONST_INT,
+        MOD,
     } code;
 
     union {

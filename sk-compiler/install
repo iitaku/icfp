@@ -1,3 +1,3 @@
 #!/bin/sh
-cp src/prog/attack.txt ./
+cp src/prog/attack.txt ./prog.txt
 exit 0
