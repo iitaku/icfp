@@ -2,6 +2,7 @@ project(sk-compiler)
 cmake_minimum_required(VERSION 2.8)
 
 add_definitions(-Wall)
+#add_definitions("-D WITH_SLEEP")
 
 set(SOURCE ltg-opt.cpp 
            expand-integer.cpp 
@@ -18,9 +19,16 @@ file(GLOB PKG_SCRIPT "prog")
 set(EXEC_NAME ltg-opt)
 add_executable(${EXEC_NAME} ${SOURCE})
 
+add_executable(pro ${SOURCE})
+add_executable(opp ${SOURCE})
+
+set_target_properties(pro PROPERTIES COMPILE_FLAGS "-D PRO_SCRIPT")
+set_target_properties(opp PROPERTIES COMPILE_FLAGS "-D OPP_SCRIPT")
+
 set(PKG_DIR ${EXEC_NAME}.d)
 
-#add_definitions("-D WITH_SLEEP")
+enable_testing()
+add_test(match ./ltg.linux64 match pro opp 2> log)
 
 add_custom_target(package 
                   COMMAND rm -rf ${PKG_DIR} 

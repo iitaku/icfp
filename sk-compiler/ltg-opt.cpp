@@ -69,6 +69,14 @@ main(int argc, char **argv)
 
     int opt;
 
+#ifdef PRO_SCRIPT
+    prog_file = "pro.txt";
+#endif
+
+#ifdef OPP_SCRIPT
+    prog_file = "opp.txt";
+#endif
+
     while ((opt = getopt(argc, argv, "p:")) != -1) {
         switch (opt) {
         case 'p':
