@@ -24,13 +24,35 @@ expand_sk(const expr *src,
         const expr *src_a = src->u.apply.a;
 
         if (head == NULL) {
+#if 0
             if (src_f->code == expr::CARD) {
-                head = expr::card(src_f->u.card);
+                expr *left = expr::card(src_f->u.card);
+                return expr::apply(left,
+                                   expand_sk(src_a, NULL, change));
+            } else if (src_a->code == expr::CARD) {
+                expr *right = expr::card(src_a->u.card);
+                return expr::apply(expand_sk(src_f, NULL, change),
+                                   right);
+            } else {
+                expr *head = expand_sk(src_f, NULL, change);
+                return expand_sk(src_a, head, change);
+            }
+#endif
+            if (src_f->code == expr::CARD) {
+                expr *left = expr::card(src_f->u.card);
+                expr *ret = expr::apply(left,
+                                        expand_sk(src_a, NULL, change));
+                return ret;
+            } else if (src_a->code == expr::CARD) {
+                expr *right = expr::card(src_a->u.card);
+                expr *ret = expr::apply(expand_sk(src_f, NULL, change),
+                                        right);
+                return ret;
             } else {
                 head = expand_sk(src_f, NULL, change);
             }
-
-            return expand_sk(src_a, head, change);
+            expr *ret = expand_sk(src_a, head, change);
+            return ret;
         } else {
             if (src_f->code == expr::CARD) {
                 expr *sk = expr::apply(expr::card(CARD_S),
@@ -46,7 +68,11 @@ expand_sk(const expr *src,
         break;
 
     case expr::EMIT_INC_COUNTER: {
-        return expr::apply(head, expr::emit_inc_counter(src->u.int_val));
+        if (head) {
+            return expr::apply(head, expr::emit_inc_counter(src->u.int_val));
+        } else {
+            return expr::emit_inc_counter(src->u.int_val);
+        }
     }
         break;
 
