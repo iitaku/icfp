@@ -65,6 +65,7 @@ zombie_help2()
 }
 #endif
 
+#if 0
 void
 zombie_help()
 {
@@ -93,6 +94,37 @@ zombie_help()
 		
 	}
 }
+#else
+
+void
+zombie_help()
+{
+	var_map_t vm;
+	eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, 0, 8, false));
+	eval_and_run_at("(@8)(@8)(help)(10000)", vm, CompileParam(RIGHT, 0, 4, false));
+	eval_and_run_at("(@8)(@8)", vm, CompileParam(RIGHT, 0, 11, false));
+	eval_and_run_at("(S(K(@8)))(@11)(attack)(5632)", vm, CompileParam(RIGHT, 0, 3, false));
+	
+	eval_and_run_at("zero", vm, CompileParam(RIGHT, 0, 5, false));
+	eval_and_run_at("zero", vm, CompileParam(RIGHT, 0, 6, false));
+	
+	while (1) {
+		eval_and_run_at("(@3)(@5)", vm, CompileParam(RIGHT, 0, 2, false));
+		
+		eval_and_run_at("(@2)(@6)", vm, CompileParam(RIGHT, 0, 129, false));
+		eval_and_run_at("(S (K ((@4) (@6)))", vm, CompileParam(RIGHT, 0, 9, false));
+		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, false));
+		
+		eval_and_run_at("(@6)", vm, CompileParam(RIGHT, 0, 2, true));
+		eval_and_run_at("(K (@6)))", vm, CompileParam(RIGHT, 0, 9, true));
+		eval_and_run_at("zombie (@5)(@9)", vm, CompileParam(RIGHT, 0, 129, false));
+		eval_and_run_at("clear", vm, CompileParam(RIGHT, 0, 9, false));
+		
+		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 5, false));
+		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, false));
+	}
+}
+#endif
 
 
 }
