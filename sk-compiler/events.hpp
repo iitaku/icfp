@@ -24,7 +24,8 @@ struct Event {
 
     static Event dead(enum event_code code, int slot) {
         Event e;
-        e.code = PROP_DEAD;
+        //e.code = PROP_DEAD;
+		e.code = code;
         e.u.slot = slot;
         return e;
     }
