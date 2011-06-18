@@ -53,6 +53,8 @@ public:
 extern std::vector<Slot> pro;
 extern std::vector<Slot> opp;
 
+void dump_slots();
+
 }
 
 #endif
