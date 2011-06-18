@@ -52,6 +52,7 @@ eval_and_run_at(int slot,
 
     for (int i=0; i<coms.size(); i++) {
         write_line(coms[i]);
+        get_command_line(from_opponent);
     }
 }
 
