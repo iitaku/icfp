@@ -1,7 +1,8 @@
 project(sk-compiler)
 cmake_minimum_required(VERSION 2.8)
 
-add_definitions(-Wall)
+
+add_definitions(-Wall -Werror)
 #add_definitions("-D WITH_SLEEP")
 
 set(SOURCE ltg-opt.cpp 

@@ -66,6 +66,7 @@ struct stmt {
         EXPR,
         LABEL,
         SET_VAR,
+        SET_SLOT
     } code ;
 
     union {
@@ -80,6 +81,11 @@ struct stmt {
             char *label;
             static_expr *expr;
         } goto_if;
+
+        struct {
+            int slot;
+            expr *val;
+        } set_slot;
     }u;
 
     static stmt goto_(char *label)
@@ -118,6 +124,16 @@ struct stmt {
         ret.code = SET_VAR;
         ret.u.set_var.var_name = var_name;
         ret.u.set_var.expr = e;
+        return ret;
+    }
+
+    static stmt set_slot(int reg,
+                             struct expr *e)
+    {
+        stmt ret;
+        ret.code = SET_SLOT;
+        ret.u.set_slot.slot = reg;
+        ret.u.set_slot.val = e;
         return ret;
     }
 

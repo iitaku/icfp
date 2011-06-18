@@ -13,7 +13,11 @@ expand_sk(const expr *src,
 {
     switch (src->code) {
     case expr::CARD:
-        return expr::apply(head, expr::card(src->u.card));
+        if (head == NULL) {
+            return expr::card(src->u.card);
+        } else {
+            return expr::apply(head, expr::card(src->u.card));
+        }
 
     case expr::APPLY: {
         const expr *src_f = src->u.apply.f;
@@ -46,6 +50,7 @@ expand_sk(const expr *src,
     }
         break;
 
+    case expr::GET_SLOT:
     case expr::REF_STATIC_VAR:
     case expr::INTEGER:
         assert(0);
