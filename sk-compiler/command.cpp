@@ -5,8 +5,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
 
-#define ENABLE_SIM 0
+#define ENABLE_SIM 1
 
 namespace copy_kawaii {
 FILE *from_opponent;
@@ -92,8 +93,10 @@ get_command_line(FILE *fp)
 
 void
 write_line(command const &com) {
-    bool dump = 0;
+    bool dump = false;
     const char *name = get_card_name(com.card);
+
+    assert(com.slot < 256);
 
     if (com.lr == LEFT) {
         fprintf(to_opponent, "1\n");

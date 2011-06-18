@@ -3,6 +3,7 @@
 
 #include "expr.hpp"
 #include "command.hpp"
+#include "translators.hpp"
 #include <map>
 #include <string>
 
@@ -38,14 +39,16 @@ namespace copy_kawaii {
  *
  * 途中結果見たいときは、中のdumpをtrueにする
  */
-void eval_at(commands &coms,int slot, expr *expr, var_map_t &vm);
-
+void eval_at(commands &coms, expr *expr, var_map_t &vm,
+             CompileParam const &cp);
 void eval_at(commands &coms,
              int slot,
              const char *prog,
-             var_map_t &vm);
-
-void eval_and_run_at(int slot, const char *prog, var_map_t &vm);
+             var_map_t &vm,
+             CompileParam const &cp);
+void eval_and_run_at( const char *prog,
+                      var_map_t &vm,
+                     CompileParam const &cp);
 
 /* 文字列 -> expr やりたいときは parse_expr を使う */
 
