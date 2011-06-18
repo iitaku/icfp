@@ -573,18 +573,12 @@ dump_card(Card const &c)
 {
 	if (c.is_number) {
 		fprintf(stderr, "%d", c.ans);
-	} else if (c.type == 1) {
+	} else {
 		fprintf(stderr, "(%s ", c.method.c_str());
 		for (int i=0; i<c.cards.size(); i++) {
 			dump_card(c.cards[i]);
 		}
 		fprintf(stderr, ")");
-	} else {
-		fprintf(stderr, "(");
-		for (int i=0; i<c.cards.size(); i++) {
-			dump_card(c.cards[i]);
-		}
-		fprintf(stderr, "%s)", c.method.c_str());
 	}
 }
 	

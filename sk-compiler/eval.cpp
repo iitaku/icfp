@@ -11,8 +11,8 @@ eval_at(commands &coms,
         expr *expr, var_map_t &vm,
         CompileParam const &cp)
 {
-    bool dump = false;
-    struct expr *iexpanded = expand_integer(vm, expr);
+    bool dump = true;
+    struct expr *iexpanded = expand_integer(vm, expr, cp);
 
     if (dump) {
         fprintf(stderr, "expand integer = ");
@@ -20,7 +20,7 @@ eval_at(commands &coms,
         fprintf(stderr, "\n");
     }
     bool change = false;
-    struct expr *sk = expand_sk(iexpanded, NULL, &change);
+    struct expr *sk = expand_sk(iexpanded, NULL, &change, cp);
     if (dump) {
         fprintf(stderr, "expand sk = ");
         dump_expr(sk);
@@ -38,7 +38,7 @@ eval_at(commands &coms,
         const char *prog, var_map_t &vm,
         CompileParam const &cp)
 {
-    expr *e = parse_expr(prog);
+    expr *e = parse_expr(prog, cp);
     eval_at(coms, e, vm, cp);
 }
 

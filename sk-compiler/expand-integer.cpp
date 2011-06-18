@@ -56,6 +56,9 @@ f(var_map_t &vars, const expr *e, bool top_level)
     case expr::CLEAR:
         return expr::clear();
 
+    case expr::REF_PREV_VAL:
+        return expr::ref_prev_val();
+
     case expr::DIRECT_INT:
         return expr::direct_int(e->u.int_val);
 
@@ -70,7 +73,8 @@ f(var_map_t &vars, const expr *e, bool top_level)
 }
 
 expr *
-expand_integer(var_map_t &vars, const expr *src)
+expand_integer(var_map_t &vars, const expr *src,
+               const CompileParam &cp)
 {
     return f(vars, src, true);
 }

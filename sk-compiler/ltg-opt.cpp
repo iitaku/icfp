@@ -38,6 +38,10 @@ dump_expr(expr *e)
         fprintf(stderr, "<emit_inc %d> ", e->u.int_val);
         break;
 
+    case expr::REF_PREV_VAL:
+        fprintf(stderr, "<prev_val> ");
+        break;
+
     case expr::REF_STATIC_VAR:
         fprintf(stderr, "$%s ", e->u.ref_static_var_name);
         break;
@@ -94,6 +98,7 @@ main(int argc, char **argv)
     
     var_map_t vm;
 
-     zombie_help();
+    //zombie_help();
     //demo_left();
+    demo_ref_prev_val();
 }

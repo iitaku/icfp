@@ -7,6 +7,7 @@ void zombie_help();
 void zombie_help_rot();
 
 void demo_left();
+void demo_ref_prev_val();
 
 }
 
