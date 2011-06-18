@@ -1,7 +1,12 @@
 project(sk-compiler)
 cmake_minimum_required(VERSION 2.8)
 
-add_definitions(-Wall -Werror)
+
+add_definitions(-Wall
+  -Werror
+  -Wno-sign-compare
+  )
+#add_definitions("-D WITH_SLEEP")
 
 set(SOURCE ltg-opt.cpp 
            expand-integer.cpp 
@@ -9,7 +14,10 @@ set(SOURCE ltg-opt.cpp
            command.cpp 
            compile.cpp
            program.cpp 
-           tool.cpp)
+           tool.cpp
+           solve.cpp
+           eval.cpp
+           zombie-help.cpp)
 
 file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")
@@ -18,9 +26,16 @@ file(GLOB PKG_SCRIPT "prog")
 set(EXEC_NAME ltg-opt)
 add_executable(${EXEC_NAME} ${SOURCE})
 
+add_executable(pro ${SOURCE})
+add_executable(opp ${SOURCE})
+
+set_target_properties(pro PROPERTIES COMPILE_FLAGS "-D PRO_SCRIPT")
+set_target_properties(opp PROPERTIES COMPILE_FLAGS "-D OPP_SCRIPT")
+
 set(PKG_DIR ${EXEC_NAME}.d)
 
-#add_definitions("-D WITH_SLEEP")
+enable_testing()
+add_test(match ./ltg.linux64 match pro opp 2> log)
 
 add_custom_target(package 
                   COMMAND rm -rf ${PKG_DIR} 

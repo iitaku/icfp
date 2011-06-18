@@ -1,9 +1,12 @@
 #include "expr.hpp"
 #include "command.hpp"
+#include "solve.hpp"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#define ENABLE_SIM 0
 
 namespace copy_kawaii {
 FILE *from_opponent;
@@ -12,16 +15,16 @@ FILE *to_opponent;
 void
 dump_commands(commands const &com)
 {
-    int n = com.commands.size();
+    int n = com.size();
     for (int i=0; i<n; i++) {
-        if (com.commands[i].lr == LEFT) {
+        if (com[i].lr == LEFT) {
             fprintf(stderr, "left slot=%d card=%s\n",
-                    com.commands[i].slot,
-                    get_card_name(com.commands[i].card));
+                    com[i].slot,
+                    get_card_name(com[i].card));
         } else {
             fprintf(stderr, "right slot=%d card=%s\n",
-                    com.commands[i].slot,
-                    get_card_name(com.commands[i].card));
+                    com[i].slot,
+                    get_card_name(com[i].card));
         }
     }
 }
@@ -47,11 +50,11 @@ read_slot()
     return slot;
 }
 
-static enum card_code
+static std::pair<std::string, enum card_code>
 read_card()
 {
     read_line(from_opponent);
-    return get_card_code(line);
+    return std::make_pair(line, get_card_code(line));
 }
 
 struct command
@@ -67,11 +70,21 @@ get_command_line(FILE *fp)
     }
 
     if (l.lr == LEFT) {
-        l.card = read_card();
+        std::pair<std::string, enum card_code> card = read_card();
+        l.card = card.second;
         l.slot = read_slot();
+
+        if (ENABLE_SIM) {
+            opp[l.slot].set(card.first, 1);
+        }
     } else {
         l.slot = read_slot();
-        l.card = read_card();
+        std::pair<std::string, enum card_code> card = read_card();
+        l.card = card.second;
+
+        if (ENABLE_SIM) {
+            opp[l.slot].set(card.first, 2);
+        }
     }
 
     return l;
@@ -79,35 +92,44 @@ get_command_line(FILE *fp)
 
 void
 write_line(command const &com) {
-    bool dump = 1;
+    bool dump = 0;
+    const char *name = get_card_name(com.card);
 
     if (com.lr == LEFT) {
         fprintf(to_opponent, "1\n");
-        fprintf(to_opponent, "%s\n", get_card_name(com.card));
+        fprintf(to_opponent, "%s\n", name);
         fprintf(to_opponent, "%d\n", com.slot);
         fflush(to_opponent);
 
         if (dump) {
             fprintf(stderr, "1\n");
-            fprintf(stderr, "%s\n", get_card_name(com.card));
+            fprintf(stderr, "%s\n", name);
             fprintf(stderr, "%d\n", com.slot);
         }
         fflush(stderr);
+
+        if (ENABLE_SIM) {
+            pro[com.slot].set(Card(name), 1);
+        }
     } else {
         fprintf(to_opponent, "2\n");
         fprintf(to_opponent, "%d\n", com.slot);
-        fprintf(to_opponent, "%s\n", get_card_name(com.card));
+        fprintf(to_opponent, "%s\n", name);
         fflush(to_opponent);
 
         if (dump) {
             fprintf(stderr, "2\n");
             fprintf(stderr, "%d\n", com.slot);
-            fprintf(stderr, "%s\n", get_card_name(com.card));
+            fprintf(stderr, "%s\n", name);
         }
         fflush(stderr);
+
+        if (ENABLE_SIM) {
+            pro[com.slot].set(Card(name), 2);
+        }
     }
 #ifdef WITH_SLEEP
-    usleep(100000);
+    // usleep(100000);
 #endif
 }
 

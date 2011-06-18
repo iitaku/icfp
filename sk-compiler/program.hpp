@@ -21,6 +21,8 @@ struct static_expr {
         EQEQ,
         CONST_INT,
         MOD,
+        PROV,
+        OPPV
     } code;
 
     union {
@@ -29,6 +31,7 @@ struct static_expr {
         } bin;
         char *var_name;
         int val;
+        static_expr *subscript;
     }u;
 
     static static_expr *bin(enum expr_code code,
@@ -55,6 +58,19 @@ struct static_expr {
         static_expr ret;
         ret.code = VARREF;
         ret.u.var_name = name;
+        return new static_expr(ret);
+    }
+
+    static static_expr *prov(static_expr *ss) {
+        static_expr ret;
+        ret.code = PROV;
+        ret.u.subscript = ss;
+        return new static_expr(ret);
+    }
+    static static_expr *oppv(static_expr *ss) {
+        static_expr ret;
+        ret.code = OPPV;
+        ret.u.subscript = ss;
         return new static_expr(ret);
     }
 };

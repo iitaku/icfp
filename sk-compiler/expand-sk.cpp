@@ -25,12 +25,20 @@ expand_sk(const expr *src,
 
         if (head == NULL) {
             if (src_f->code == expr::CARD) {
-                head = expr::card(src_f->u.card);
+                expr *left = expr::card(src_f->u.card);
+                expr *ret = expr::apply(left,
+                                        expand_sk(src_a, NULL, change));
+                return ret;
+            } else if (src_a->code == expr::CARD) {
+                expr *right = expr::card(src_a->u.card);
+                expr *ret = expr::apply(expand_sk(src_f, NULL, change),
+                                        right);
+                return ret;
             } else {
                 head = expand_sk(src_f, NULL, change);
             }
-
-            return expand_sk(src_a, head, change);
+            expr *ret = expand_sk(src_a, head, change);
+            return ret;
         } else {
             if (src_f->code == expr::CARD) {
                 expr *sk = expr::apply(expr::card(CARD_S),
@@ -46,9 +54,20 @@ expand_sk(const expr *src,
         break;
 
     case expr::EMIT_INC_COUNTER: {
-        return expr::apply(head, expr::emit_inc_counter(src->u.int_val));
+        if (head) {
+            return expr::apply(head, expr::emit_inc_counter(src->u.int_val));
+        } else {
+            return expr::emit_inc_counter(src->u.int_val);
+        }
     }
         break;
+
+    case expr::DIRECT_INT: {
+        return expr::direct_int(src->u.int_val);
+    }
+
+    case expr::CLEAR:
+        return expr::clear();
 
     case expr::GET_SLOT:
     case expr::REF_STATIC_VAR:
