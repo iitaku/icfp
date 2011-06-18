@@ -1,0 +1,12 @@
+set e = 0
+set m = 2
+label a
+
+set m0 = $e * 2 + 2
+set m1 = $e * 2 + 3
+set m = $m + 1
+
+attack ($m0)($e)(8192)
+attack ($m1)($e)(3072)
+set e = $e + 1
+goto a
