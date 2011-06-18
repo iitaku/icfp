@@ -12,7 +12,7 @@ zombie_help0()
 
     CriticalHandler ch;
 
-    ch.critical_slots.push_back("imm");
+    ch.add_critical_slot("imm");
 
     eval_and_run_at("10000", vm, CompileParam(RIGHT, 0, 8, false), ch);
     eval_and_run_at("8192", vm, CompileParam(RIGHT, 0, 4, false), ch);

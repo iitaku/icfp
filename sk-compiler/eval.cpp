@@ -11,7 +11,7 @@ eval_at(commands &coms,
         expr *expr, var_map_t &vm,
         CompileParam const &cp)
 {
-    bool dump = true;
+    bool dump = false;
     struct expr *iexpanded = expand_integer(vm, expr, cp);
 
     if (dump) {
@@ -53,8 +53,11 @@ gather_critical_event(event_list_t &dst,
         case Event::PROP_DEAD: {
             std::string slot_name = vsa.slot_to_name[ev.u.slot];
 
-            for (int j=0; j<cl.critical_slots.size(); j++) {
-                if (cl.critical_slots[i] == slot_name) {
+            critical_slots_t::const_iterator i = cl.critical_slots.begin(),
+                e = cl.critical_slots.end();
+            
+            for (; i!=e; ++i) {
+                if (i->first == slot_name) {
                     /* critical slot is dead !! */
                     dst.push_back(ev);
                 }

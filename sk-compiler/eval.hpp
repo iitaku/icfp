@@ -10,10 +10,12 @@
 
 namespace copy_kawaii {
 
+typedef std::map<std::string, bool> critical_slots_t;
+
 struct CriticalHandler {
     bool type_error_critical;
 
-    std::vector<std::string> critical_slots;
+    critical_slots_t critical_slots;
 
     /* リカバリできたら true を返す
      * コマンドを発行するときは
@@ -27,6 +29,14 @@ struct CriticalHandler {
     CriticalHandler()
         :type_error_critical(true)
     {
+    }
+
+    void add_critical_slot(std::string const &slot) {
+        critical_slots[slot] = true;
+    }
+
+    void remove_critical_slot(std::string const &slot) {
+        critical_slots.erase(slot);
     }
 };
 
