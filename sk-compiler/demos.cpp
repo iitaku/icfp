@@ -30,8 +30,12 @@ demo_ref_prev_val()
         eval_and_run_at("S K K", vm, CompileParam(RIGHT, 0, 8, false));
         dump_slots();
         eval_and_run_at("3", vm, CompileParam(RIGHT, 0, 8, true));
+
+        eval_and_run_at("3", vm, CompileParam(LEFT, 0, 9, false));
+        eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 9, true));
         dump_slots();
         eval_and_run_at("clear", vm, CompileParam(LEFT, 0, 8, false));
+        eval_and_run_at("clear", vm, CompileParam(LEFT, 0, 9, false));
         dump_slots();
     }
 }
