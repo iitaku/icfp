@@ -84,7 +84,7 @@ main(int argc, char **argv)
     fclose(in);
 
     program prog = build(coms, source);
-    dump_program(prog);
+    //dump_program(prog);
     run(prog);
 /*
     if (argc < 2) {

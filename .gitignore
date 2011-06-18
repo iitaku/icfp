@@ -2,3 +2,9 @@
 *~
 build
 *.swp
+CMakeFiles
+Makefile
+CMakeCache.txt
+*.cmake
+*.d/
+*.gz
