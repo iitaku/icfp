@@ -1,6 +1,7 @@
 /* -*- tab-width: 4 ; indent-tabs-mode: t -*- */
 
 #include <iostream>
+#include <stdio.h>
 #include "solve.hpp"
 
 namespace copy_kawaii {
@@ -565,5 +566,57 @@ void Slot::set(Card card, int apply)
 // proponent and opponents' slots
 std::vector<Slot> pro;
 std::vector<Slot> opp;
+
+
+static void
+dump_card(Card const &c)
+{
+	if (c.is_number) {
+		fprintf(stderr, "%d", c.ans);
+	} else if (c.type == 1) {
+		fprintf(stderr, "(%s ", c.method.c_str());
+		for (int i=0; i<c.cards.size(); i++) {
+			dump_card(c.cards[i]);
+		}
+		fprintf(stderr, ")");
+	} else {
+		fprintf(stderr, "(");
+		for (int i=0; i<c.cards.size(); i++) {
+			dump_card(c.cards[i]);
+		}
+		fprintf(stderr, "%s)", c.method.c_str());
+	}
+}
+	
+
+void
+dump_slots()
+{
+	for (int i=0; i<256; i++) {
+		if (pro[i].root.method == "I" &&
+			pro[i].v == 10000)
+		{
+			/* nop */
+		} else {
+			fprintf(stderr, "p%d: v=%d, f=", i, pro[i].v);
+			dump_card(pro[i].root);
+			fprintf(stderr, "\n");
+		}
+	}
+
+	for (int i=0; i<256; i++) {
+		if (opp[i].root.method == "I" &&
+			opp[i].v == 10000)
+		{
+			/* nop */
+		} else {
+			fprintf(stderr, "p%d: v=%d, f=", i, opp[i].v);
+			dump_card(opp[i].root);
+			fprintf(stderr, "\n");
+		}
+	}
+}
+
+
 
 }
