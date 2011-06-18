@@ -21,6 +21,7 @@ struct expr {
         DIRECT_INT,
         REF_STATIC_VAR,
         GET_SLOT,
+        GET_VSLOT,
         CLEAR,
         REF_PREV_VAL
     } code;
@@ -34,6 +35,7 @@ struct expr {
         int slot;
 
         char *ref_static_var_name;
+        char *get_vslot_name;
     }u;
 
     static struct expr *apply(struct expr *f,
@@ -79,6 +81,12 @@ struct expr {
         struct expr ret;
         ret.code = REF_STATIC_VAR;
         ret.u.ref_static_var_name = var_name;
+        return new expr(ret);
+    }
+    static struct expr *get_vslot(char *name) {
+        struct expr ret;
+        ret.code = GET_VSLOT;
+        ret.u.get_vslot_name = name;
         return new expr(ret);
     }
 

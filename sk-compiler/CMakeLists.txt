@@ -18,7 +18,8 @@ set(SOURCE ltg-opt.cpp
            solve.cpp
            eval.cpp
            zombie-help.cpp
-           demos.cpp)
+           demos.cpp
+           virtual-slot.cpp)
 
 file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")

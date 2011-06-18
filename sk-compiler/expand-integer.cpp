@@ -1,5 +1,6 @@
 #include "expr.hpp"
 #include "translators.hpp"
+#include "virtual-slot.hpp"
 #include <assert.h>
 
 namespace copy_kawaii {
@@ -23,6 +24,12 @@ expand_integer(int n, bool top_level)
                                expr::emit_inc_counter(n));
         }
     }
+}
+
+static int
+get_vslot(const char *vslot_name)
+{
+    return vsa.name_to_slot[vslot_name];
 }
 
 static expr *
@@ -61,6 +68,13 @@ f(var_map_t &vars, const expr *e, bool top_level)
 
     case expr::DIRECT_INT:
         return expr::direct_int(e->u.int_val);
+
+    case expr::GET_VSLOT: {
+        int vslot = get_vslot(e->u.get_vslot_name);
+        return expr::apply(expr::card(CARD_GET),
+                           expr::apply(expr::card(CARD_GET),
+                                       expr::emit_inc_counter(vslot)));
+    }
 
     case expr::EMIT_INC_COUNTER: {
         assert(0);

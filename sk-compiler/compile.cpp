@@ -62,6 +62,7 @@ emit_inc_counter(commands &dst,
 
     /* get (succ zero) */
     dst.push_back(command(RIGHT, cp.prog_slot, CARD_ZERO));
+    emit_bit_shift(dst, cp.imm_slot, cp.prog_slot);
 }
 
 static void
@@ -123,6 +124,7 @@ do_compile(commands &dst,
         dst.push_back(command(LEFT, cp.prog_slot, CARD_PUT));
         break;
 
+    case expr::GET_VSLOT:
     case expr::GET_SLOT:
     case expr::REF_STATIC_VAR:
     case expr::INTEGER: {

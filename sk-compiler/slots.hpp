@@ -13,8 +13,6 @@
 
 namespace copy_kawaii {
 
-static const int SLOT_IMM = 0;  // IMM は (get i) でとってくる必要があるので先頭に置く
-static const int SLOT_PROGRAM = 129;
 
 }
 

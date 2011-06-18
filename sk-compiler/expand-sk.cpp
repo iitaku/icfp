@@ -73,6 +73,7 @@ expand_sk(const expr *src,
     case expr::CLEAR:
         return expr::clear();
 
+    case expr::GET_VSLOT:
     case expr::GET_SLOT:
     case expr::REF_STATIC_VAR:
     case expr::INTEGER:

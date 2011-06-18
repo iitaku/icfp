@@ -370,7 +370,21 @@ parse_expr(struct lexer *l,
                 prev = expr::apply(prev, cur);
             }
             break;
-            
+
+        case lexval::MUL:
+            lex(l);
+            if (l->lastval.code != lexval::SYM) {
+                fprintf(stderr, "error near '@'\n");
+                assert(0);
+            }
+            cur = expr::get_vslot(l->lastval.u.sym);
+            lex(l);
+            if (prev == NULL) {
+                prev = cur;
+            } else {
+                prev = expr::apply(prev, cur);
+            }
+            break;
 
         case lexval::AT:
             lex(l);
@@ -421,6 +435,7 @@ parse_expr(const char *src,
 {
     struct lexer l(src, strlen(src));
     lex(&l);
+
 
     expr *ret = parse_expr(l);
 
