@@ -140,6 +140,7 @@ bool Card::set(Card& card, int type_)
 	type = type_;
 
 	if (is_number) {
+		cerr << method << endl; /////
 		cerr << "Error: number is not function: " << method << endl; ///
 		return false;
 	}
@@ -157,11 +158,16 @@ bool Card::set(Card& card, int type_)
 					cerr << "Error: S: f: need function, not number" << endl;
 				cards[1].set(cards[2], type);
 				cards[0].set(cards[1], type);
-				//*this = cards[0];
+				Card c(cards[0]);
+				*this = c;
+#if 0
 				method = cards[0].method;
-				cards = cards[0].cards;
+				vector<Card> c(cards[0].cards);
+				cards = c;
 				n = cards[0].n;
 				is_number = cards[0].is_number;
+				ans = cards[0].ans;
+#endif
 				int x;
 				if (func(x, type)) {
 					is_number = true;
@@ -223,10 +229,13 @@ bool Card::set(Card& card, int type_)
 		} else if (method == "K") {
 			cards.push_back(card);
 			if (cards.size() == n) {
-				//*this = cards[0];
+				Card c(cards[0]);
+				*this = c;
+#if 0
 				is_number = cards[0].is_number;
 				method = cards[0].method;
 				ans = cards[0].ans;
+#endif
 			}
 			return true;
 		} else if (method == "put") {
@@ -439,7 +448,8 @@ bool Card::set(Card& card, int type_)
 					}
 				}
 			} else if (method == "I") {
-				*this = cards[0];
+				Card c(cards[0]);
+				*this = c;
 				return true;
 			}
 			if (func(x, type)) {
@@ -450,7 +460,7 @@ bool Card::set(Card& card, int type_)
 			}
 			return true;
 		} else {
-			cerr << "Error: invalid function:" << method << endl;
+			cerr << "Error: invalid function: " << method << endl;
 			return false;
 		}
 	}
@@ -510,7 +520,7 @@ int main()
 		opp.push_back(Slot(1));
 	}
 
-#if 1
+#if 0
 	pro[0].set(Card("get"), 1);
 	pro[0].set(Card("put"), 1);
 #if 1
@@ -577,10 +587,26 @@ int main()
 	pro[0].set(Card("K"), 2);
 	pro[0].set(Card("I"), 2);
 	pro[0].set(Card("zero"), 2);
-	//pro[0].set(Card("succ"), 1);
+	pro[0].set(Card("succ"), 1);
 #endif
 #if 0
 	pro[0].set(Card("I"), 2);
+	pro[0].set(Card("zero"), 2);
+#endif
+#if 1
+	opp[255].v = 0;
+	pro[0].set(Card("zombie"), 2);
+	pro[0].set(Card("zero"), 2);
+	pro[0].set(Card("K"), 1);
+	pro[0].set(Card("S"), 1);
+	pro[0].set(Card("succ"), 2);
+	pro[0].set(Card("K"), 1);
+	pro[0].set(Card("S"), 1);
+	pro[0].set(Card("succ"), 2);
+	pro[0].set(Card("K"), 1);
+	pro[0].set(Card("S"), 1);
+	pro[0].set(Card("succ"), 2);
+	pro[0].set(Card("zero"), 2);
 	pro[0].set(Card("zero"), 2);
 #endif
 
