@@ -38,6 +38,10 @@ dump_expr(expr *e)
         fprintf(stderr, "<emit_inc %d> ", e->u.int_val);
         break;
 
+    case expr::REF_PREV_VAL:
+        fprintf(stderr, "<prev_val> ");
+        break;
+
     case expr::REF_STATIC_VAR:
         fprintf(stderr, "$%s ", e->u.ref_static_var_name);
         break;
@@ -94,71 +98,7 @@ main(int argc, char **argv)
     
     var_map_t vm;
 
-    zombie_help();
-/*
-    
-    while (1) {
-        commands coms;
-        eval_at(coms, 129, "attack (0)(1)(8192)", vm);
-
-        for (int i=0; i<coms.size(); i++) {
-            write_line(coms[i]);
-            get_command_line(from_opponent);
-        }
-    }
-*/
-
-#if 0
-    const char *prog_file = "prog.txt";
-
-    int opt;
-
-#ifdef PRO_SCRIPT
-    prog_file = "pro.txt";
-#endif
-
-#ifdef OPP_SCRIPT
-    prog_file = "opp.txt";
-#endif
-
-    while ((opt = getopt(argc, argv, "p:")) != -1) {
-        switch (opt) {
-        case 'p':
-            prog_file = optarg;
-            break;
-
-        default:
-            fprintf(stderr, "usage : ltg-opt [-p prog.txt]\n");
-            return 1;
-        }
-    }
-
-    //fprintf(stderr, "%s\n", argv[1]);
-    commands coms;
-
-    if (optind < argc) {
-        if (argv[optind][0] == '1') {
-            get_command_line(from_opponent);
-        }
-    }
-
-    FILE *in = fopen(prog_file, "rb");
-    if (in == NULL) {
-        perror(prog_file);
-        return 1;
-    }
-    fread(source, 1, sizeof(source), in);
-    fclose(in);
-#endif
-
-    //program prog = build(coms, source);
-    //dump_program(prog);
-    //run(prog);
-/*
-    if (argc < 2) {
-        build(coms, progs[0]);
-        return 0;
-    }
-*/
-
+    //zombie_help();
+    //demo_left();
+    demo_ref_prev_val();
 }

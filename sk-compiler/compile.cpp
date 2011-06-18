@@ -52,24 +52,22 @@ emit_bit_shift(commands &dst, int val, int slot)
 static void
 emit_inc_counter(commands &dst,
                  const expr *src,
-                 int prog_slot,
-                 bool top_level)
+                 const CompileParam &cp)
 {    
     int n = src->u.int_val;
 
-    dst.push_back(command(LEFT, SLOT_IMM, CARD_PUT));
-    dst.push_back(command(RIGHT, SLOT_IMM, CARD_ZERO));
-    emit_bit_shift(dst, n, SLOT_IMM);
+    dst.push_back(command(LEFT, cp.imm_slot, CARD_PUT));
+    dst.push_back(command(RIGHT, cp.imm_slot, CARD_ZERO));
+    emit_bit_shift(dst, n, cp.imm_slot);
 
     /* get (succ zero) */
-    dst.push_back(command(RIGHT, prog_slot,  CARD_ZERO));
+    dst.push_back(command(RIGHT, cp.prog_slot, CARD_ZERO));
 }
 
 static void
 direct_int(commands &dst,
            const expr *src,
-           int prog_slot,
-           bool top_level)
+           int prog_slot)
 {
     int n = src->u.int_val;
     dst.push_back(command(LEFT, prog_slot, CARD_PUT)); // slot imm = I
@@ -80,12 +78,11 @@ direct_int(commands &dst,
 static void
 do_compile(commands &dst,
            const expr *src,
-           int prog_slot,
-           bool top_level)
+           const CompileParam &cp)
 {
     switch (src->code) {
     case expr::CARD:
-        dst.push_back(command(RIGHT, prog_slot, src->u.card));
+        dst.push_back(command(RIGHT, cp.prog_slot, src->u.card));
         break;
 
     case expr::APPLY: {
@@ -93,14 +90,14 @@ do_compile(commands &dst,
         const expr *a = src->u.apply.a;
 
         if (f->code == expr::CARD) {
-            compile(dst, a, prog_slot, false);
-            dst.push_back(command(LEFT, prog_slot, f->u.card));
+            compile(dst, a, cp);
+            dst.push_back(command(LEFT, cp.prog_slot, f->u.card));
         } else if (a->code == expr::CARD) {
-            compile(dst, f, prog_slot, false);
-            dst.push_back(command(RIGHT, prog_slot, a->u.card));
+            compile(dst, f, cp);
+            dst.push_back(command(RIGHT, cp.prog_slot, a->u.card));
         } else if (a->code == expr::EMIT_INC_COUNTER) {
-            compile(dst, f, prog_slot, false);
-            emit_inc_counter(dst, a, prog_slot, top_level);
+            compile(dst, f, cp);
+            emit_inc_counter(dst, a, cp);
         } else {
             fprintf(stderr, "invalid expr");
             assert(0);
@@ -109,17 +106,21 @@ do_compile(commands &dst,
         break;
 
     case expr::EMIT_INC_COUNTER: {
-        emit_inc_counter(dst, src, prog_slot, top_level);
+        emit_inc_counter(dst, src, cp);
     }
         break;
 
     case expr::DIRECT_INT: {
-        direct_int(dst, src, prog_slot, top_level);
+        direct_int(dst, src, cp.prog_slot);
+    }
+        break;
+
+    case expr::REF_PREV_VAL: {
     }
         break;
 
     case expr::CLEAR:
-        dst.push_back(command(LEFT, prog_slot, CARD_PUT));
+        dst.push_back(command(LEFT, cp.prog_slot, CARD_PUT));
         break;
 
     case expr::GET_SLOT:
@@ -135,10 +136,9 @@ do_compile(commands &dst,
 void
 compile(commands &dst,
         const expr *src,
-        int prog_slot,
-        bool top_level)
+        CompileParam const &cp)
 {
-    do_compile(dst, src, prog_slot, top_level);
+    do_compile(dst, src, cp);
 }
 
 

@@ -416,11 +416,25 @@ parse_expr(lexer &l)
 }
 
 expr *
-parse_expr(const char *src)
+parse_expr(const char *src,
+           CompileParam const &cp)
 {
     struct lexer l(src, strlen(src));
     lex(&l);
-    return parse_expr(l);
+
+    expr *ret = parse_expr(l);
+
+    if (cp.ref_prev_val) {
+        if (cp.ref_prev_lr == LEFT) {
+            return expr::apply(ret,
+                               expr::ref_prev_val());
+        } else {
+            return expr::apply(expr::ref_prev_val(),
+                               ret);
+        }
+    } else {
+        return ret;
+    }
 }
 
 static static_expr *parse_static_expr(lexer &l,
@@ -669,7 +683,7 @@ parse(const char *source,
 quit:
     return ret;
 }
-
+#if 0
 static int
 lookup_label(program &prog,
              const char *src)
@@ -736,7 +750,7 @@ static void
 compile_expr(commands &coms,
              program &prog,
              expr *e,
-             int prog_slot)
+             CompileParam const &cp)
 {
     bool dump = false;
     if (dump) {
@@ -759,13 +773,12 @@ compile_expr(commands &coms,
         dump_expr(sk);
         fprintf(stderr, "\n");
     }
-    compile(coms, sk, prog_slot, true);
+    compile(coms, sk, cp);
 
     if (dump) {
         dump_commands(coms);
     }
 }
-
 
 
 void
@@ -825,6 +838,7 @@ run(program &prog)
     }
 }
 
+#endif
 void
 dump_program(program &prog)
 {
