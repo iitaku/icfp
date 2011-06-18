@@ -46,6 +46,10 @@ dump_expr(expr *e)
     case expr::CLEAR:
         fprintf(stderr, "clear ");
         break;
+
+    case expr::DIRECT_INT:
+        fprintf(stderr, "<direct_int %d> ", e->u.int_val);
+        break;
     }
 }
 

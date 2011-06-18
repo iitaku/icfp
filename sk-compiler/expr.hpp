@@ -16,6 +16,7 @@ struct expr {
 
         /* virtual nodes */
         EMIT_INC_COUNTER,
+        DIRECT_INT,
         REF_STATIC_VAR,
         GET_SLOT,
         CLEAR
@@ -53,6 +54,13 @@ struct expr {
     static struct expr *integer(int val) {
         struct expr ret;
         ret.code = INTEGER;
+        ret.u.int_val = val;
+        return new expr(ret);
+    }
+
+    static struct expr *direct_int(int val) {
+        struct expr ret;
+        ret.code = DIRECT_INT;
         ret.u.int_val = val;
         return new expr(ret);
     }

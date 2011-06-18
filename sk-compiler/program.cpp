@@ -708,7 +708,7 @@ compile_expr(compiler_state &st,
         dump_expr(sk);
         fprintf(stderr, "\n");
     }
-    compile(st,coms, sk, prog_slot);
+    compile(st,coms, sk, prog_slot, true);
 
     if (dump) {
         dump_commands(coms);

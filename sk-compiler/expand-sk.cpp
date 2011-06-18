@@ -24,20 +24,6 @@ expand_sk(const expr *src,
         const expr *src_a = src->u.apply.a;
 
         if (head == NULL) {
-#if 0
-            if (src_f->code == expr::CARD) {
-                expr *left = expr::card(src_f->u.card);
-                return expr::apply(left,
-                                   expand_sk(src_a, NULL, change));
-            } else if (src_a->code == expr::CARD) {
-                expr *right = expr::card(src_a->u.card);
-                return expr::apply(expand_sk(src_f, NULL, change),
-                                   right);
-            } else {
-                expr *head = expand_sk(src_f, NULL, change);
-                return expand_sk(src_a, head, change);
-            }
-#endif
             if (src_f->code == expr::CARD) {
                 expr *left = expr::card(src_f->u.card);
                 expr *ret = expr::apply(left,
@@ -75,6 +61,10 @@ expand_sk(const expr *src,
         }
     }
         break;
+
+    case expr::DIRECT_INT: {
+        return expr::direct_int(src->u.int_val);
+    }
 
     case expr::CLEAR:
         return expr::clear();
