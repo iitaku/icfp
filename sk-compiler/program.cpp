@@ -39,6 +39,7 @@ struct lexval {
         EXCLAM,
         DOLLER,
         AT,
+        CLEAR,
         SET_SLOT,
         MOD
     } code;
@@ -166,6 +167,9 @@ lex(struct lexer *l)
                             }
                             if (strcmp("set_slot", symbuf) == 0) {
                                 return l->lastval = lexval(lexval::SET_SLOT);
+                            }
+                            if (strcmp("clear", symbuf) == 0) {
+                                return l->lastval = lexval(lexval::CLEAR);
                             }
 
                             return l->lastval = lexval::symval(strdup(symbuf));
@@ -329,6 +333,17 @@ parse_expr(struct lexer *l,
                 prev = expr::apply(prev, cur);
             }
             break;
+
+        case lexval::CLEAR:
+            cur = expr::clear();
+            lex(l);
+            if (prev == NULL) {
+                prev = cur;
+            } else {
+                prev = expr::apply(prev, cur);
+            }
+            break;
+            
 
         case lexval::AT:
             lex(l);
@@ -672,7 +687,7 @@ compile_expr(compiler_state &st,
              expr *e,
              int prog_slot)
 {
-    bool dump = true;
+    bool dump = false;
     if (dump) {
         fprintf(stderr, "orig = ");
         dump_expr(e);
@@ -693,7 +708,7 @@ compile_expr(compiler_state &st,
         dump_expr(sk);
         fprintf(stderr, "\n");
     }
-    compile(st,coms, sk, prog_slot);
+    compile(st,coms, sk, prog_slot, true);
 
     if (dump) {
         dump_commands(coms);

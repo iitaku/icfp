@@ -16,8 +16,10 @@ struct expr {
 
         /* virtual nodes */
         EMIT_INC_COUNTER,
+        DIRECT_INT,
         REF_STATIC_VAR,
-        GET_SLOT
+        GET_SLOT,
+        CLEAR
     } code;
 
     union {
@@ -56,6 +58,13 @@ struct expr {
         return new expr(ret);
     }
 
+    static struct expr *direct_int(int val) {
+        struct expr ret;
+        ret.code = DIRECT_INT;
+        ret.u.int_val = val;
+        return new expr(ret);
+    }
+
     static struct expr *emit_inc_counter(int val) {
         struct expr ret;
         ret.code = EMIT_INC_COUNTER;
@@ -74,6 +83,12 @@ struct expr {
         struct expr ret;
         ret.code = GET_SLOT;
         ret.u.slot = slot;
+        return new expr(ret);
+    }
+
+    static struct expr *clear() {
+        struct expr ret;
+        ret.code = CLEAR;
         return new expr(ret);
     }
 };
