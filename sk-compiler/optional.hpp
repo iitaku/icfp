@@ -1,6 +1,8 @@
 #ifndef OPTIONAL_HPP
 #define OPTIONAL_HPP
 
+#include <assert.h>
+
 struct nothing {
 };
 
@@ -33,3 +35,5 @@ struct optional
     }
 };
 
+
+#endif

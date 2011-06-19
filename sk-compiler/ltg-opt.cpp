@@ -67,7 +67,7 @@ void init()
 {
     for (int i = 0; i < N_SLOTS; i++) {
         pro.push_back(Slot());
-        opp.push_back(Slot(1));
+        opp.push_back(Slot());
     }
 
     from_opponent = stdin;

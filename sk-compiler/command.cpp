@@ -77,7 +77,8 @@ get_command_line(FILE *fp)
         ret.com.slot = read_slot();
 
         if (ENABLE_SIM) {
-            ret.events = opp[ret.com.slot].set(card.second, 1);
+            ret.events = apply_card(card.second,
+                                    LEFT, ret.com.slot, false);
         }
     } else {
         ret.com.slot = read_slot();
@@ -85,7 +86,8 @@ get_command_line(FILE *fp)
         ret.com.card = card.second;
 
         if (ENABLE_SIM) {
-            ret.events = opp[ret.com.slot].set(card.second, 2);
+            ret.events = apply_card(card.second,
+                                    RIGHT, ret.com.slot, false);
         }
     }
 
@@ -114,7 +116,7 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            ret = pro[com.slot].set(Card(com.card), 1);
+            ret = apply_card(com.card, LEFT, com.slot, false);
         }
     } else {
         fprintf(to_opponent, "2\n");
@@ -130,7 +132,7 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            ret = pro[com.slot].set(Card(com.card), 2);
+            ret = apply_card(com.card, RIGHT, com.slot, false);
         }
     }
 #ifdef WITH_SLEEP

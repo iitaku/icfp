@@ -8,6 +8,8 @@
 
 #include "tool.hpp"
 #include "events.hpp"
+#include "optional.hpp"
+#include "command.hpp"
 
 namespace copy_kawaii {
 
@@ -26,39 +28,23 @@ public:
 	union {
 		int int_val;
 		struct {
-			int cur_applied;
+			int cur_num_applied;
 			Card *args[3];
 		} func;
 	} u;
 
 public:
-
-	/**
-	 * @brief constructor
-	 * @param[in] method_  card type
-	 * @param[in] ans_     set number to card (number card only)
-	 */
-	Card(enum card_code func);
-	Card(int ans_) {
-		is_number = true;
-		ans = ans_;
-		n = 0;
+	Card(enum card_code method_)
+	{
+		card = method_;
+		is_number = false;
+		u.func.cur_num_applied = 0;
 	}
-	~Card();
 
-	/**
-	 * @brief application applies (as a function) a card
-	 * @param[in] card_    card
-	 * @param[in] type_    proponent (0) or opponent (1)
-	 */
-	bool set(Card& card, int type_=0);
-
-	/**
-	 * @brief execute function
-	 * @param[out] ans_    return value from function
-	 * @param[in]  type_   proponent (0) or opponent (1)
-	 */
-	bool func(int& ans_, int type_=0);
+	Card(int v) {
+		is_number = true;
+		u.int_val = v;
+	}
 };
 
 /* return nothing() if type error is occured */
@@ -66,7 +52,8 @@ optional<Card *>apply(event_list_t &events,
 					  Card *func,
 					  Card *arg,
 					  int slot,
-					  bool is_pro);
+					  bool is_pro,
+					  bool is_zombie_apply);
 
 /**
  * @brief Slot class
@@ -75,22 +62,28 @@ struct Slot {
 	// vitality
 	int v;
 	// field value (not implement yet; use slots[*].root.ans or slots[*].func(ans))
-	Card *f
+	Card *f;
 
 	/**
 	 * @brief constructor
 	 * @param[in] type_    proponent (0) or opponent (1)
 	 */
-	Slot();
-	~Slot();
+	Slot()
+		: v(10000), f(new Card(CARD_I))
+	{}
+
+	~Slot()
+	{}
 
 	/**
 	 * @brief set a card on a slot
 	 * @param[in] card_    card
 	 * @param[in] apply_   left application (1) or right application (2)
 	 */
-	event_list_t set(Card card, int apply);
 };
+
+event_list_t apply_card(enum card_code card, enum lr_code lr, int slot, bool is_pro);
+
 
 // proponent and opponents' slots
 extern std::vector<Slot> pro;
