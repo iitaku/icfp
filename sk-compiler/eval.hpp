@@ -53,7 +53,8 @@ struct CriticalHandler {
  * あとやること 
  *  - hook入れたい
  *   -> いれた by iitaku
- *      const char*を引数にとるeval_*_atの中で、hookに登録された条件式を実行し、0以外が帰ったらhookプログラムを実行する。
+ *      const char*を引数にとるeval_*_atの中で、コマンドが送られてくるたびに
+ *      hookに登録された条件式を実行し、0以外が帰ったらhookプログラムを実行する。
  *      条件式には、event_listとhookプログラムのexprとvar_mapが渡り、後者２つはいじれる。（必要ならproとoppをみる）
  *  - robust にする … スロットが死んでるとき、殺されたときの対応
  *

@@ -62,7 +62,11 @@ struct command_line
 get_command_line(FILE *fp)
 {
     command_line ret;
+#ifdef DUEL_WITH_IDIOT_PROGRAM
+    line[0] = '1';
+#else
     read_line(fp);
+#endif
 
     if (line[0] == '1') {
         ret.com.lr = LEFT;
@@ -72,9 +76,18 @@ get_command_line(FILE *fp)
 
 
     if (ret.com.lr == LEFT) {
+#ifdef DUEL_WITH_IDIOT_PROGRAM        
+        std::pair<std::string, enum card_code> card = std::make_pair("I", get_card_code("I"));
+#else
         std::pair<std::string, enum card_code> card = read_card();
+#endif
         ret.com.card = card.second;
+
+#ifdef DUEL_WITH_IDIOT_PROGRAM        
+        ret.com.slot = 0;
+#else
         ret.com.slot = read_slot();
+#endif
 
         if (ENABLE_SIM) {
             ret.events = apply_card(card.second,
@@ -116,7 +129,7 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            ret = apply_card(com.card, LEFT, com.slot, false);
+            ret = apply_card(com.card, LEFT, com.slot, true);
         }
     } else {
         fprintf(to_opponent, "2\n");
@@ -132,7 +145,7 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            ret = apply_card(com.card, RIGHT, com.slot, false);
+            ret = apply_card(com.card, RIGHT, com.slot, true);
         }
     }
 #ifdef WITH_SLEEP
