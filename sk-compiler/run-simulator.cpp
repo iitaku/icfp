@@ -37,11 +37,11 @@ void update_state(commands &coms)
     for (int i=0; i<coms.size(); i++) {
         event_list_t el = apply_card(coms[i].card, coms[i].lr,
                                      coms[i].slot, true);
-        for (int i=0; i<el.size(); i++) {
-            switch (el[i].code) {
+        for (int j=0; j<el.size(); j++) {
+            switch (el[j].code) {
             case Event::PROP_DEAD:
                 fprintf(stderr, "%d dead\n",
-                        el[i].u.slot);
+                        el[j].u.slot);
                 break;
             }
         }
@@ -63,7 +63,7 @@ void sim(void)
         int step = 0;
         commands coms;
 
-        eval_at(coms, "!@1 @1", vm, CompileParam(RIGHT, 0, 1, false));
+        eval_at(coms, "@1 @1", vm, CompileParam(RIGHT, 0, 1, false));
 
         update_state(coms);
     }

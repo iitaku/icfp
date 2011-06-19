@@ -56,6 +56,10 @@ eval_at(commands &coms,
     expr *e = parse_expr(prog, cp, p);
     eval_at(coms, e, vm, cp);
     if (remove_last_zero) {
+        int n = coms.size()-1;
+        assert(coms[n].card == CARD_ZERO &&
+               coms[n].lr == RIGHT);
+
         coms.erase(coms.end()-1);
     }
 
