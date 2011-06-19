@@ -15,7 +15,7 @@
 
 namespace copy_kawaii {
 
-void init()
+void init(const char *_12)
 {
     for (int i = 0; i < N_SLOTS; i++) {
         pro.push_back(Slot());
@@ -25,7 +25,10 @@ void init()
     from_opponent = stdin;
     to_opponent = stdout;
 
-    sim_log = fopen("sim-log.txt", "wb");
+    std::string fname = "sim-log-";
+    fname += _12;
+    fname += ".txt";
+    sim_log = fopen(fname.c_str(), "wb");
 }
 
 program
@@ -44,12 +47,15 @@ char source[1024*1024];
 int
 main(int argc, char **argv)
 {
-    init();
-
     if (argc >= 2) {
         if (argv[1][0] == '1') {
+            init("1");
             get_command_line(from_opponent);
+        } else {
+            init("2");
         }
+    } else {
+        init("0");
     }
 
     var_map_t vm;

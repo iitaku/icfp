@@ -169,7 +169,7 @@ zombie_help()
 	int n5i = 0;
 	
 	while (1) {
-		fprintf(stderr, "checkpoint2\n"); fflush(stderr);
+		//fprintf(stderr, "checkpoint2\n"); fflush(stderr);
 		
 		if(opp[n5i * 2].v == 10000) {
 			el = eval_and_run_at("(*n2)(*n5)", vm, CompileParam(RIGHT, imm, n129, false), ch);

@@ -18,7 +18,9 @@ zombie_attack0()
     eval_and_run_at("255", vm, CompileParam(RIGHT, 0, 2, false), ch);
 	eval_and_run_at("attack (3)(@2)(@1)", vm, CompileParam(RIGHT, 0, 128, false), ch);
 	eval_and_run_at("attack (4)(@2)(@1)", vm, CompileParam(RIGHT, 0, 128, false), ch);
-	eval_and_run_at("clear", vm, CompileParam(RIGHT, 0, 8, false), ch);
+
+	eval_and_run_at("clear", vm, CompileParam(RIGHT, 0, 1, false), ch);
+	eval_and_run_at("clear", vm, CompileParam(RIGHT, 0, 2, false), ch);
 
 	VSlot imm = VSA->alloc_vslot("imm");
 	
