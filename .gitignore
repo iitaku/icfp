@@ -8,3 +8,7 @@ CMakeCache.txt
 *.cmake
 *.d/
 *.gz
+GPATH
+GRTAGS
+GSYMS
+GTAGS

@@ -52,6 +52,9 @@ struct CriticalHandler {
 /*
  * あとやること 
  *  - hook入れたい
+ *   -> いれた by iitaku
+ *      const char*を引数にとるeval_*_atの中で、hookに登録された条件式を実行し、0以外が帰ったらhookプログラムを実行する。
+ *      条件式には、event_listとhookプログラムのexprとvar_mapが渡り、後者２つはいじれる。（必要ならproとoppをみる）
  *  - robust にする … スロットが死んでるとき、殺されたときの対応
  *
  * スロットが何とかなった時の対応を入れる可能性があるので、
@@ -80,6 +83,11 @@ void eval_at(commands &coms,
 /* prog を実行し、完了するかもしくは
  * クリティカルなイベントが発生したら返る
  */
+event_list_t eval_and_run_at(expr *e,
+                             var_map_t &vm,
+                             CompileParam const &cp,
+                             CriticalHandler &ch);
+
 event_list_t eval_and_run_at(const char *prog,
                              var_map_t &vm,
                              CompileParam const &cp,

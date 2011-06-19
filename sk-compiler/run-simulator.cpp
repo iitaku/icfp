@@ -16,12 +16,13 @@ void init()
     pro[32].v = -1;
     pro[127].v = -1;
     pro[19].v = -1;
+    pro[29].v = -1;
 
     from_opponent = stdin;
     to_opponent = stdout;
 }
 
-int revive_trigger(var_map_t& vm)
+int revive_trigger(const event_list_t& event_list, expr* e, var_map_t& vm)
 {
     for (int i=0; i<pro.size(); ++i)
     {
@@ -53,15 +54,16 @@ main(int argc, char **argv)
         CriticalHandler ch;
         var_map_t vm;
 
+        int step = 0;
+        
         commands coms;
 
-        hooks.programs.push_back(Hook("revive ($i)", &vm, CompileParam(LEFT, 0, 128, false), &ch, &coms, revive_trigger));
+        hooks.programs.push_back(Hook("revive ($i)", vm, CompileParam(LEFT, 0, 128, false), ch, revive_trigger));
        
         eval_at(coms, "attack (3)(4)(8192)", vm, CompileParam(LEFT, 0, 4, false));
         update_state(coms);
         
-        eval_at(coms, "attack (10)(11)(8192)", vm, CompileParam(LEFT, 0, 4, false));
-        update_state(coms);
-        
+        //eval_at(coms, "attack (10)(11)(8192)", vm, CompileParam(LEFT, 0, 4, false));
+        //update_state(coms);
     }
 }
