@@ -128,15 +128,10 @@ zombie_help()
 	
 	while (1) {
 		el = eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, imm, n8, false), ch);
-	dump_slots();
 		el = eval_and_run_at("(*n8)(*n8)(help)", vm, CompileParam(RIGHT, imm, n10, false), ch);
-	dump_slots();
 		el = eval_and_run_at("(*n10)(10000)", vm, CompileParam(RIGHT, imm, n4, false), ch);
-	dump_slots();
 		el = eval_and_run_at("(*n8)(*n8)", vm, CompileParam(RIGHT, imm, n11, false), ch);
-	dump_slots();
 		el = eval_and_run_at("(S(K(*n8)))(*n11)(attack)(5632)", vm, CompileParam(RIGHT, imm, n3, false), ch);
-	dump_slots();
 		
 #if ENABLE_SIM
 		bool execute_revise = check_revive_using_vslot(ch, vm);
