@@ -767,7 +767,6 @@ is_disp_omit(Slot &slt)
 void
 dump_slots()
 {
-	return ;
 	fprintf(sim_log, "turn=%d\n", turn_count);
 	for (int i=0; i<256; i++) {
 		if (is_disp_omit(pro[i])) {

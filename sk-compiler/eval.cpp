@@ -47,8 +47,17 @@ eval_at(commands &coms,
     MemPool p;
     //fprintf(stderr, "eval : %s\n", prog);
 
+    bool remove_last_zero = false;
+    if (prog[0] == '!') {
+        remove_last_zero = true;
+        prog = prog+1;
+    }
+
     expr *e = parse_expr(prog, cp, p);
     eval_at(coms, e, vm, cp);
+    if (remove_last_zero) {
+        coms.erase(coms.end()-1);
+    }
 
     for (int i=0; i<coms.size(); ++i)
     {
