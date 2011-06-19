@@ -19,8 +19,7 @@ set(SOURCE ltg-opt.cpp
            eval.cpp
            zombie-help.cpp
            demos.cpp
-           virtual-slot.cpp
-           mempool.cpp)
+           virtual-slot.cpp)
 
 file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")
@@ -46,12 +45,12 @@ add_executable(robust-zombie ${SOURCE})
 set_target_properties(robust-zombie PROPERTIES COMPILE_FLAGS "-D ROBUST_ZOMBIE")
 
 add_executable(zombie-help ${SOURCE})
+set_target_properties(zombie-help PROPERTIES COMPILE_FLAGS "-D ZOMBIE_HELP")
 
 #add_executable(pro ${SOURCE})
 #add_executable(opp ${SOURCE})
 #set_target_properties(pro PROPERTIES COMPILE_FLAGS "-D PRO_SCRIPT")
 #set_target_properties(opp PROPERTIES COMPILE_FLAGS "-D OPP_SCRIPT")
-#set_target_properties(zombie-help PROPERTIES COMPILE_FLAGS "-D ZOMBIE_HELP")
 
 set(PKG_DIR ${EXEC_NAME}.d)
 

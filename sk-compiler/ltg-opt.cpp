@@ -55,7 +55,9 @@ main(int argc, char **argv)
 #ifdef ATTACK0
     test_attack0();
 #elif defined ROBUST_ZOMBIE
-    demo_robust_zombie();
+    //demo_robust_zombie();
+#elif defined ZOMBIE_HELP
+    zombie_help();
 #else
     //zombie_help();
     //demo_left();
