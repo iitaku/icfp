@@ -35,6 +35,7 @@ zombie_help0()
     }
 }
 
+#if 0
 void
 zombie_help()
 {
@@ -95,6 +96,7 @@ zombie_help1()
 		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, true));
 	}
 }
+#endif
 
 
 }

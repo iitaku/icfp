@@ -6,7 +6,10 @@
 #include <vector>
 #include <string>
 
+#include "tool.hpp"
 #include "events.hpp"
+#include "optional.hpp"
+#include "command.hpp"
 
 namespace copy_kawaii {
 
@@ -17,85 +20,70 @@ const int N_SLOTS = 256;
  */
 class Card {
 public:
-	// card type : 15 types
-	std::string method;
-	// arguments : 0-3
-	std::vector<Card> cards;
-	// return value
-	int ans;
-	// number of arguments
-	int n;
-	// this card is number ?
 	bool is_number;
-	// proponent (0) or opponent (1)
-	int type;
+	// card type : 15 types
+	enum card_code card;
+	// arguments : 0-3
+
+	union {
+		int int_val;
+		struct {
+			int cur_num_applied;
+			Card *args[3];
+		} func;
+	} u;
 
 public:
-	/**
-	 * @brief constructor
-	 * @param[in] method_  card type
-	 * @param[in] ans_     set number to card (number card only)
-	 */
-	Card(const std::string& method_);
-	Card(const std::string& method_, int ans_);
-	Card(const Card& card) {
-		method = card.method;
-		cards = card.cards;
-		ans = card.ans;
-		n = card.n;
-		is_number = card.is_number;
+	Card(enum card_code method_)
+	{
+		card = method_;
+		is_number = false;
+		u.func.cur_num_applied = 0;
 	}
-	~Card();
 
-	/**
-	 * @brief application applies (as a function) a card
-	 * @param[in] card_    card
-	 * @param[in] type_    proponent (0) or opponent (1)
-	 */
-	bool set(Card& card, int type_=0);
-
-	/**
-	 * @brief execute function
-	 * @param[out] ans_    return value from function
-	 * @param[in]  type_   proponent (0) or opponent (1)
-	 */
-	bool func(int& ans_, int type_=0);
+	Card(int v) {
+		is_number = true;
+		u.int_val = v;
+	}
 };
+
+/* return nothing() if type error is occured */
+optional<Card *>apply(event_list_t &events,
+					  Card *func,
+					  Card *arg,
+					  int slot,
+					  bool is_pro,
+					  bool is_zombie_apply);
 
 /**
  * @brief Slot class
  */
-class Slot {
-private:
-	// proponent (0) or opponent (1)
-	int type;
-
-public:
-	static event_list_t event;
-
-	// count cards (not implement yet)
-	int cnt;
+struct Slot {
 	// vitality
 	int v;
 	// field value (not implement yet; use slots[*].root.ans or slots[*].func(ans))
-	int f;
-	// root of cards (functions)
-	Card root;
+	Card *f;
 
 	/**
 	 * @brief constructor
 	 * @param[in] type_    proponent (0) or opponent (1)
 	 */
-	Slot(int type_=0);
-	~Slot();
+	Slot()
+		: v(10000), f(new Card(CARD_I))
+	{}
+
+	~Slot()
+	{}
 
 	/**
 	 * @brief set a card on a slot
 	 * @param[in] card_    card
 	 * @param[in] apply_   left application (1) or right application (2)
 	 */
-	event_list_t set(Card card, int apply);
 };
+
+event_list_t apply_card(enum card_code card, enum lr_code lr, int slot, bool is_pro);
+
 
 // proponent and opponents' slots
 extern std::vector<Slot> pro;

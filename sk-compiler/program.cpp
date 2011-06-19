@@ -893,6 +893,54 @@ dump_program(program &prog)
     }
 }
 
+void
+dump_expr(expr *e)
+{
+    switch (e->code) {
+    case expr::APPLY:
+        fprintf(stderr, "(");
+        dump_expr(e->u.apply.f);
+        dump_expr(e->u.apply.a);
+        fprintf(stderr, ") ");
+        break;
+
+    case expr::CARD:
+        fprintf(stderr, "%s ", get_card_name(e->u.card));
+        break;
+
+    case expr::INTEGER:
+        fprintf(stderr, "%d ", e->u.int_val);
+        break;
+
+    case expr::EMIT_INC_COUNTER:
+        fprintf(stderr, "<emit_inc %d> ", e->u.int_val);
+        break;
+
+    case expr::REF_PREV_VAL:
+        fprintf(stderr, "<prev_val> ");
+        break;
+
+    case expr::REF_STATIC_VAR:
+        fprintf(stderr, "$%s ", e->u.ref_static_var_name);
+        break;
+
+    case expr::GET_SLOT:
+        fprintf(stderr, "@%d ", e->u.slot);
+        break;
+    case expr::GET_VSLOT:
+        fprintf(stderr, "*%s ", e->u.get_vslot_name);
+        break;
+
+    case expr::CLEAR:
+        fprintf(stderr, "clear ");
+        break;
+
+    case expr::DIRECT_INT:
+        fprintf(stderr, "<direct_int %d> ", e->u.int_val);
+        break;
+    }
+}
+
 
 
 }
