@@ -68,8 +68,8 @@ set_target_properties(zombie-help PROPERTIES COMPILE_FLAGS "-D ZOMBIE_HELP")
 add_executable(selfcare ${SOURCE})
 set_target_properties(selfcare PROPERTIES COMPILE_FLAGS "-D SELFCARE")
 
-add_executable(nakamura ${SOURCE})
-set_target_properties(nakamura PROPERTIES COMPILE_FLAGS "-D NAKAMURA")
+#add_executable(nakamura ${SOURCE})
+#set_target_properties(nakamura PROPERTIES COMPILE_FLAGS "-D NAKAMURA")
 
 #add_executable(pro ${SOURCE})
 #add_executable(opp ${SOURCE})
