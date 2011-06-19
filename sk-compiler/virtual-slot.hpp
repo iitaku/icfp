@@ -70,8 +70,11 @@ struct VirtualSlotAllocator {
 #if defined(DUEL_IN_LOCAL)
 extern VirtualSlotAllocator vsa_[2];
 extern __thread VirtualSlotAllocator* vsa;
+
+#define VSA vsa
 #else
 extern VirtualSlotAllocator vsa;
+#define VSA (&vsa)
 #endif
 
 

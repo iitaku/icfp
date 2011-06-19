@@ -3,6 +3,9 @@
 #include <iostream>
 #include <cstdio>
 #include "solve.hpp"
+#include "virtual-slot.hpp"
+
+#define DUMP false
 
 namespace copy_kawaii {
 
@@ -82,6 +85,7 @@ damage(event_list_t &events,
 	if (*v <= 0) {
 		if (pro_opp == PRO) {
 			events.push_back(Event::dead(Event::PROP_DEAD, idx));
+			VSA->states[idx] = VirtualSlotAllocator::DEAD;
 		}
 		*v = 0;
 	}
@@ -512,7 +516,7 @@ apply_card(enum card_code cc,
 {
 	event_list_t events;
 	Slot *slt;
-	bool dump = false;
+	bool dump = DUMP;
 
 	/* zombie apply */
 	if (is_pro) {

@@ -71,14 +71,9 @@ void sim(void)
         eval_at(coms, "10000", vm, CompileParam(LEFT, 0, 8, false));
         update_state(coms);
 
-        //eval_at(coms, "I", vm, CompileParam(RIGHT, 0, 14, false));
-        //update_state(coms);
-        eval_at(coms, "I 4", vm, CompileParam(RIGHT, 128, 14, false));
+        eval_at(coms, "attack (3)(4)(6000)", vm, CompileParam(LEFT, 3, 4, false));
         update_state(coms);
-
-        eval_at(coms, "attack (3)(4)(8192)", vm, CompileParam(LEFT, 0, 4, false));
-        update_state(coms);
-        eval_at(coms, "attack (3)(4)(8192)", vm, CompileParam(LEFT, 0, 4, false));
+        eval_at(coms, "attack (4)(5)(5000)", vm, CompileParam(LEFT, 3, 4, false));
         update_state(coms);
         eval_at(coms, "(S (K (help (0) (1))) (K (@8)))",
                 vm, CompileParam(RIGHT,0,3,false));
