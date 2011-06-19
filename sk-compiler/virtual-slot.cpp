@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <limits.h>
+#include "solve.hpp"
 #include "virtual-slot.hpp"
 
 namespace copy_kawaii {
@@ -33,7 +34,7 @@ VirtualSlotAllocator::alloc_vslot(const char *name,
     for (int i=0; i<MAX_NUM_VSLOT; i++) {
         int i_cost = genint_cost(i);
 
-        if (states[i] == FREE) {
+        if (states[i] == FREE && pro[i].v > 0) {
             if (i_cost < min_cost) {
                 min = i;
                 min_cost = i_cost;
