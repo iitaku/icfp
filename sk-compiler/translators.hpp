@@ -35,7 +35,6 @@ struct CompileParam {
          prog_slot(prog.slot),
          ref_prev_val(ref_prev_val)
     {}
-
 };
 
 expr *expand_integer(var_map_t &prog, const expr *src,

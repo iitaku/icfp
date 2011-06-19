@@ -58,41 +58,43 @@ read_card()
     return std::make_pair(line, get_card_code(line));
 }
 
-struct command
+struct command_line
 get_command_line(FILE *fp)
 {
-    struct command l;
+    command_line ret;
     read_line(fp);
 
     if (line[0] == '1') {
-        l.lr = LEFT;
+        ret.com.lr = LEFT;
     } else {
-        l.lr = RIGHT;
+        ret.com.lr = RIGHT;
     }
 
-    if (l.lr == LEFT) {
+
+    if (ret.com.lr == LEFT) {
         std::pair<std::string, enum card_code> card = read_card();
-        l.card = card.second;
-        l.slot = read_slot();
+        ret.com.card = card.second;
+        ret.com.slot = read_slot();
 
         if (ENABLE_SIM) {
-            opp[l.slot].set(card.first, 1);
+            ret.events = opp[ret.com.slot].set(card.first, 1);
         }
     } else {
-        l.slot = read_slot();
+        ret.com.slot = read_slot();
         std::pair<std::string, enum card_code> card = read_card();
-        l.card = card.second;
+        ret.com.card = card.second;
 
         if (ENABLE_SIM) {
-            opp[l.slot].set(card.first, 2);
+            ret.events = opp[ret.com.slot].set(card.first, 2);
         }
     }
 
-    return l;
+    return ret;
 }
 
-void
+event_list_t
 write_line(command const &com) {
+    event_list_t ret;
     bool dump = false;
     const char *name = get_card_name(com.card);
 
@@ -112,7 +114,7 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            pro[com.slot].set(Card(name), 1);
+            ret = pro[com.slot].set(Card(name), 1);
         }
     } else {
         fprintf(to_opponent, "2\n");
@@ -128,12 +130,14 @@ write_line(command const &com) {
         fflush(stderr);
 
         if (ENABLE_SIM) {
-            pro[com.slot].set(Card(name), 2);
+            ret = pro[com.slot].set(Card(name), 2);
         }
     }
 #ifdef WITH_SLEEP
     // usleep(100000);
 #endif
+
+    return ret;
 }
 
 }

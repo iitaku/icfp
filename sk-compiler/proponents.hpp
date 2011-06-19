@@ -9,6 +9,9 @@ void zombie_help_rot();
 void demo_left();
 void demo_ref_prev_val();
 void demo_vslot();
+void demo_robust_zombie();
+
+void test_attack0();
 
 }
 

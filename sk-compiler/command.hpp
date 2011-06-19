@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <stdio.h>
+#include "events.hpp"
 #include "expr.hpp"
 
 namespace copy_kawaii {
@@ -32,8 +33,14 @@ struct command {
 typedef std::vector<command> commands;
 
 void dump_commands(commands const &com);
-struct command get_command_line(FILE *fp);
-void write_line(command const &com);
+
+struct command_line {
+    struct command com;
+    event_list_t events;
+};
+
+command_line get_command_line(FILE *fp);
+event_list_t write_line(command const &com);
 
 
 }

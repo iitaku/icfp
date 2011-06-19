@@ -98,11 +98,16 @@ main(int argc, char **argv)
         }
     }
 
-    
     var_map_t vm;
 
+#ifdef ATTACK0
+    test_attack0();
+#elif defined ROBUST_ZOMBIE
+    demo_robust_zombie();
+#else
     //zombie_help();
     //demo_left();
     //demo_ref_prev_val();
     demo_vslot();
+#endif
 }
