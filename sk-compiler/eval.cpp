@@ -63,15 +63,21 @@ gather_critical_event(event_list_t &dst,
         const Event &ev = src[i];
         switch (ev.code) {
         case Event::PROP_DEAD: {
+            if(ev.u.slot < MAX_NUM_VSLOT) {
+#if defined(DUEL_IN_LOCAL)
+            std::string slot_name = vsa->slot_to_name[ev.u.slot];
+#else
             std::string slot_name = vsa.slot_to_name[ev.u.slot];
+#endif
 
-            critical_slots_t::const_iterator i = cl.critical_slots.begin(),
-                e = cl.critical_slots.end();
-            
-            for (; i!=e; ++i) {
-                if (i->first == slot_name) {
-                    /* critical slot is dead !! */
-                    dst.push_back(ev);
+                critical_slots_t::const_iterator i = cl.critical_slots.begin(),
+                    e = cl.critical_slots.end();
+                
+                for (; i!=e; ++i) {
+                    if (i->first == slot_name) {
+                        /* critical slot is dead !! */
+                        dst.push_back(ev);
+                    }
                 }
             }
         }

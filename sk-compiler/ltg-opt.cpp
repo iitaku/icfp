@@ -57,7 +57,7 @@ main(int argc, char **argv)
 #elif defined SELFCARE
     test_selfcare();
 #elif defined ROBUST_ZOMBIE
-    //demo_robust_zombie();
+    demo_robust_zombie();
 #elif defined ZOMBIE_HELP
     zombie_help();
 #else

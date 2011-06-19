@@ -8,8 +8,16 @@
 
 namespace copy_kawaii {
 
+#if defined(DUEL_IN_LOCAL)
+extern pthread_mutex_t lock;
+extern volatile int which_player;
+extern __thread int player_no;
+extern __thread FILE *from_opponent;
+extern __thread FILE *to_opponent;
+#else
 extern FILE *from_opponent;
 extern FILE *to_opponent;
+#endif
 
 enum lr_code {
     LEFT,

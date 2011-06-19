@@ -52,7 +52,7 @@ demo_vslot()
 
     eval_and_run_at("30", vm, CompileParam(RIGHT, imm, slt, false), ch);
 
-    vsa.dump();
+    VSLOT_DUMP();
 
     while (1) {
         VSlot tmp1 = vsa.alloc_vslot("tmp1");
@@ -71,7 +71,7 @@ demo_vslot()
         eval_and_run_at("*tmp2", vm, CompileParam(RIGHT, imm, tmp5, false), ch);
         eval_and_run_at("*tmp3", vm, CompileParam(RIGHT, imm, tmp6, false), ch);
 
-        vsa.dump();
+        VSLOT_DUMP();
 
         eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, tmp1, false), ch);
         eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, tmp2, false), ch);
