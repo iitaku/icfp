@@ -507,7 +507,7 @@ apply(event_list_t &events,
 				return nothing();
 			}
 
-			if (in_range(i->u.int_val, 0, 256)) {
+			if (! in_range(i->u.int_val, 0, 256)) {
 				return nothing();
 			}
 
@@ -520,7 +520,7 @@ apply(event_list_t &events,
 
 		case CARD_REVIVE:
 			////////////////////////////////////////////////////////////////////
-			// revice i
+			// revive i
 			//   v[i] <- 1
 			//   return I
 			i = func->u.func.args[0];
@@ -528,7 +528,7 @@ apply(event_list_t &events,
 				return nothing();
 			}
 
-			if (in_range(i->u.int_val, 0, 256)) {
+			if (! in_range(i->u.int_val, 0, 256)) {
 				return nothing();
 			}
 
@@ -767,7 +767,6 @@ is_disp_omit(Slot &slt)
 void
 dump_slots()
 {
-	return ;
 	fprintf(sim_log, "turn=%d\n", turn_count);
 	for (int i=0; i<256; i++) {
 		if (is_disp_omit(pro[i])) {
