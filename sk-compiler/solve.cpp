@@ -129,21 +129,42 @@ apply(event_list_t &events,
 				return nothing();
 			}
 
-			if (is_pro) {
-				pro[ii].v -= nn;
-				if (pro[ii].v <= 0) {
-					pro[ii].v = 0;
-					events.push_back(Event::dead(Event::PROP_DEAD, ii));
+			if (!is_zombie_apply) {
+				if (is_pro) {
+					pro[ii].v -= nn;
+					if (pro[ii].v <= 0) {
+						pro[ii].v = 0;
+						events.push_back(Event::dead(Event::PROP_DEAD, ii));
+					}
+					opp[255-jj].v -= nn * 9 / 10;
+					stats.count_attacked(PRO, 255-jj); ///
+					if (opp[255-jj].v < 0) opp[255-jj].v = 0;
+				} else {
+					opp[ii].v -= nn;
+					if (opp[ii].v < 0) opp[ii].v = 0;
+					pro[255-jj].v -= nn * 9 / 10;
+					stats.count_attacked(OPP, 255-jj); ///
+					if (pro[255-jj].v <= 0) {
+						pro[255-jj].v = 0;
+						events.push_back(Event::dead(Event::PROP_DEAD, 255-jj));
+					}
 				}
-				opp[255-jj-1].v -= nn * 9 / 10;
-				if (opp[255-jj].v < 0) opp[255-jj].v = 0;
 			} else {
-				opp[ii].v -= nn;
-				if (opp[ii].v < 0) opp[ii].v = 0;
-				pro[255-jj].v -= nn * 9 / 10;
-				if (pro[255-jj].v <= 0) {
-					pro[255-jj].v = 0;
-					events.push_back(Event::dead(Event::PROP_DEAD, 255-jj));
+				if (is_pro) {
+					opp[ii].v -= nn;
+					if (opp[ii].v <= 0)	opp[ii].v = 0;
+					stats.count_attacked(PRO, ii); ///
+					pro[N_SLOTS-jj-1].v += nn * 9 / 10;
+					if (pro[N_SLOTS-jj-1].v > 65535) pro[N_SLOTS-jj-1].v = 65535;
+				} else {
+					pro[ii].v -= nn;
+					if (pro[ii].v <= 0) {
+						pro[ii].v = 0;
+						events.push_back(Event::dead(Event::PROP_DEAD, ii));
+					}
+					stats.count_attacked(OPP, ii); ///
+					opp[N_SLOTS-jj-1].v += nn * 9 / 10;
+					if (opp[N_SLOTS-jj-1].v > 65535) opp[N_SLOTS-jj-1].v = 65535;
 				}
 			}
 		}
@@ -173,20 +194,46 @@ apply(event_list_t &events,
 				return nothing();
 			}
 
-			if (is_pro) {
-				pro[ii].v -= nn;
-				if (pro[ii].v <= 0) {
-					pro[ii].v = 0;
-					events.push_back(Event::dead(Event::PROP_DEAD, ii));
+			if (!is_zombie_apply) {
+				if (is_pro) {
+					pro[ii].v -= nn;
+					if (pro[ii].v <= 0) {
+						pro[ii].v = 0;
+						events.push_back(Event::dead(Event::PROP_DEAD, ii));
+					}
+					stats.count_attacked(OPP, ii); ///
+					pro[jj].v += nn * 11 / 10;
+					if (pro[jj].v > 65535) pro[jj].v = 65535;
+				} else {
+					opp[ii].v -= nn;
+					if (opp[ii].v < 0) opp[ii].v = 0;
+					stats.count_attacked(PRO, ii); ///
+					opp[jj].v += nn * 11 / 10;
+					if (opp[jj].v > 65535) opp[jj].v = 65535;
+					stats.count_attacked(PRO, jj); ///
 				}
-				pro[jj].v += nn * 11 / 10;
-				if (pro[jj].v > 65535) pro[jj].v = 65535;
 			} else {
-				opp[ii].v -= nn;
-				if (opp[ii].v < 0) opp[ii].v = 0;
-
-				opp[jj].v += nn * 11 / 10;
-				if (opp[jj].v > 65535) opp[jj].v = 65535;
+				if (is_pro) {
+					opp[ii].v -= nn;
+					if (opp[ii].v < 0) opp[ii].v = 0;
+					stats.count_attacked(PRO, ii); ///
+					opp[jj].v -= nn * 11 / 10;
+					if (opp[jj].v < 0) opp[jj].v = 0;
+					stats.count_attacked(PRO, jj); ///
+				} else {
+					pro[ii].v -= nn;
+					if (pro[ii].v <= 0) {
+						pro[ii].v = 0;
+						events.push_back(Event::dead(Event::PROP_DEAD, ii));
+					}
+					stats.count_attacked(OPP, ii); ///
+					pro[jj].v -= nn * 11 / 10;
+					if (pro[jj].v <= 0) {
+						pro[jj].v = 0;
+						events.push_back(Event::dead(Event::PROP_DEAD, jj));
+					}
+					stats.count_attacked(OPP, jj); ///
+				}
 			}
 		}
 			return new Card(CARD_I);
@@ -285,6 +332,7 @@ apply(event_list_t &events,
 						if (pro[idx].v <= 0) {
 							events.push_back(Event::dead(Event::PROP_DEAD, idx));
 						}
+						stats.count_attacked(OPP, idx); ///
 					}
 				} else {
 					if (in_range(pro[idx].v, 1, 65535)) {
@@ -295,6 +343,7 @@ apply(event_list_t &events,
 				if (is_zombie_apply) {
 					if (in_range(opp[idx].v, 1, 65535)) {
 						opp[idx].v--;
+						stats.count_attacked(PRO, idx); ///
 					}
 				} else {
 					if (in_range(opp[idx].v, 1, 65535)) {
@@ -331,6 +380,7 @@ apply(event_list_t &events,
 				} else {
 					if (in_range(opp[255-idx].v, 1, 65535)) {
 						opp[255-idx].v--;
+						stats.count_attacked(PRO, 255-idx); ///
 					}
 				}
 			} else {
@@ -344,6 +394,7 @@ apply(event_list_t &events,
 						if (pro[idx].v <= 0) {
 							events.push_back(Event::dead(Event::PROP_DEAD, idx));
 						}
+						stats.count_attacked(OPP, idx); ///
 					}
 				}
 			}
@@ -454,6 +505,11 @@ apply_card(enum card_code cc,
 {
 	Slot *slt;
 
+	if (slot >= 0 && slot < N_SLOTS) {
+		if (is_pro) stats.count_used(PRO, slot);
+		else stats.count_used(OPP, slot);
+	}
+
 	if (lr== LEFT) {
 		fprintf(stderr, "apply %s (%d)\n",
 				get_card_name(cc),
@@ -492,6 +548,22 @@ apply_card(enum card_code cc,
 	} else {
 		slt->f = *r;
 	}
+
+	stats.proc();
+
+#if 0
+	///// debug
+	if (!stats.pro.slots.empty()) {
+		cerr << "*** pro slot size:            " << stats.pro.slots.size() << endl;
+		cerr << "*** pro attacked (slot, num): "
+			 << stats.pro.slots[0].slot << ", " << stats.pro.slots[0].attacked << endl;
+	}
+	if (!stats.opp.slots.empty()) {
+		cerr << "*** opp slot size:            " << stats.opp.slots.size() << endl;
+		cerr << "*** opp attacked (slot, num): "
+			 << stats.opp.slots[0].slot << ", " << stats.opp.slots[0].attacked << endl;
+	}
+#endif
 
 	return events;
 }

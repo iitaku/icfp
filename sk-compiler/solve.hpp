@@ -10,10 +10,13 @@
 #include "events.hpp"
 #include "optional.hpp"
 #include "command.hpp"
+#include "stats.hpp"
 
 namespace copy_kawaii {
 
 const int N_SLOTS = 256;
+
+static Stats stats;
 
 /**
  * @brief Card class

@@ -9,6 +9,7 @@
 
 #define ENABLE_SIM 1
 //#define ENABLE_SIM 0
+//#define DUEL_WITH_IDIOT_PROGRAM
 
 namespace copy_kawaii {
 FILE *from_opponent;
