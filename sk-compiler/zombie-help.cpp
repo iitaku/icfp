@@ -35,68 +35,111 @@ zombie_help0()
     }
 }
 
-#if 0
+void
+zombie_help2()
+{
+	CriticalHandler ch;
+	var_map_t vm;
+	event_list_t el;
+	
+//	  ch.critical_slots["imm"] = true;
+	VSlot imm = vsa.alloc_vslot("imm");
+	
+	VSlot n2 = vsa.alloc_vslot("n2");
+	VSlot n3 = vsa.alloc_vslot("n3");
+	VSlot n4 = vsa.alloc_vslot("n4");
+	VSlot n5 = vsa.alloc_vslot("n5");
+	VSlot n6 = vsa.alloc_vslot("n6");
+	VSlot n8 = vsa.alloc_vslot("n8");
+	VSlot n9 = vsa.alloc_vslot("n9");
+	VSlot n11 = vsa.alloc_vslot("n11");
+	VSlot n129 = vsa.alloc_vslot("n129");
+	
+	el = eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, imm, n8, false), ch);
+	el = eval_and_run_at("(*n8)(*n8)(help)(10000)", vm, CompileParam(RIGHT, imm, n4, false), ch);
+	el = eval_and_run_at("(*n8)(*n8)", vm, CompileParam(RIGHT, imm, n11, false), ch);
+	el = eval_and_run_at("(S(K(*n8)))(*n11)(attack)(5632)", vm, CompileParam(RIGHT, imm, n3, false), ch);
+
+	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
+	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n6, false), ch);
+	
+	el = eval_and_run_at("(*n3)(*n5)", vm, CompileParam(RIGHT, imm, n2, false), ch);
+	el = eval_and_run_at("(*n2)(*n6)", vm, CompileParam(RIGHT, imm, n129, false), ch);
+	el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n6, true), ch);
+	el = eval_and_run_at("(*n6)", vm, CompileParam(RIGHT, imm, n2, true), ch);
+	
+	el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n6, false), ch);
+	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n6, false), ch);
+	
+	while (1) {
+		el = eval_and_run_at("S (K ((*n4) (*n6)))", vm, CompileParam(RIGHT, imm, n9, false), ch);
+		
+		el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n6, true), ch);
+		el = eval_and_run_at("(K (*n6))", vm, CompileParam(RIGHT, imm, n9, true), ch);
+		el = eval_and_run_at("zombie (zero)(*n9)", vm, CompileParam(RIGHT, imm, n129, false), ch);
+		el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n9, false), ch);
+		el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n6, true), ch);
+	}
+}
+
 void
 zombie_help()
 {
+	CriticalHandler ch;
 	var_map_t vm;
-	eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, 0, 8, false));
-	eval_and_run_at("(@8)(@8)(help)(10000)", vm, CompileParam(RIGHT, 0, 4, false));
-	eval_and_run_at("(@8)(@8)", vm, CompileParam(RIGHT, 0, 11, false));
-	eval_and_run_at("(S(K(@8)))(@11)(attack)(5632)", vm, CompileParam(RIGHT, 0, 3, false));
+	event_list_t el;
 
-	eval_and_run_at("zero", vm, CompileParam(RIGHT, 0, 5, false));
-	eval_and_run_at("zero", vm, CompileParam(RIGHT, 0, 6, false));
+	VSlot imm = vsa.alloc_vslot("imm");
 	
-	eval_and_run_at("(@3)(@5)", vm, CompileParam(RIGHT, 0, 2, false));
-	eval_and_run_at("(@2)(@6)", vm, CompileParam(RIGHT, 0, 129, false));
-	eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, true));
-	eval_and_run_at("(@6)", vm, CompileParam(RIGHT, 0, 2, true));
+	VSlot n2 = vsa.alloc_vslot("n2");
+	VSlot n3 = vsa.alloc_vslot("n3");
+	VSlot n4 = vsa.alloc_vslot("n4");
+	VSlot n5 = vsa.alloc_vslot("n5");
+	VSlot n6 = vsa.alloc_vslot("n6");
+	VSlot n8 = vsa.alloc_vslot("n8");
+	VSlot n9 = vsa.alloc_vslot("n9");
+	VSlot n11 = vsa.alloc_vslot("n11");
+	VSlot n129 = vsa.alloc_vslot("n129");
 	
-	eval_and_run_at("clear", vm, CompileParam(RIGHT, 0, 6, false));
-	eval_and_run_at("zero", vm, CompileParam(RIGHT, 0, 6, false));
+	el = eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, imm, n8, false), ch);
+	el = eval_and_run_at("(*n8)(*n8)(help)(10000)", vm, CompileParam(RIGHT, imm, n4, false), ch);
+	el = eval_and_run_at("(*n8)(*n8)", vm, CompileParam(RIGHT, imm, n11, false), ch);
+	el = eval_and_run_at("(S(K(*n8)))(*n11)(attack)(5632)", vm, CompileParam(RIGHT, imm, n3, false), ch);
+	
+	vsa.free_vslot(n8);
+	vsa.free_vslot(n11);
+	
+	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
+	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n6, false), ch);
 	
 	while (1) {
-		eval_and_run_at("S (K ((@4) (@6)))", vm, CompileParam(RIGHT, 0, 9, false));
-		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, true));
-		eval_and_run_at("(K (@6))", vm, CompileParam(RIGHT, 0, 9, true));
-		eval_and_run_at("zombie (zero)(@9)", vm, CompileParam(RIGHT, 0, 129, false));
-		eval_and_run_at("clear", vm, CompileParam(RIGHT, 0, 9, false));
-		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, true));
-	}
-}
-
-void
-zombie_help1()
-{
-    CriticalHandler ch;
-
-	var_map_t vm;
-	eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, 0, 8, false), ch);
-	eval_and_run_at("(@8)(@8)(help)(10000)", vm, CompileParam(RIGHT, 0, 4, false), ch);
-	eval_and_run_at("(@8)(@8)", vm, CompileParam(RIGHT, 0, 11, false), ch);
-	eval_and_run_at("(S(K(@8)))(@11)(attack)(5632)", vm, CompileParam(RIGHT, 0, 3, false), ch);
-	
-	eval_and_run_at("zero", vm, CompileParam(RIGHT, 0, 5, false), ch);
-	eval_and_run_at("zero", vm, CompileParam(RIGHT, 0, 6, false), ch);
-	
-	while (1) {
-		eval_and_run_at("(@3)(@5)", vm, CompileParam(RIGHT, 0, 2, false), ch);
+		el = eval_and_run_at("(*n3)(*n5)", vm, CompileParam(RIGHT, imm, n2, false), ch);
 		
-		eval_and_run_at("(@2)(@6)", vm, CompileParam(RIGHT, 0, 129, false));
-		eval_and_run_at("S (K ((@4) (@6)))", vm, CompileParam(RIGHT, 0, 9, false));
-		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, true));
+		el = eval_and_run_at("(*n2)(*n6)", vm, CompileParam(RIGHT, imm, n129, false), ch);
+		el = eval_and_run_at("S (K ((*n4) (*n6)))", vm, CompileParam(RIGHT, imm, n9, false), ch);
+		el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n6, true), ch);
 		
-		eval_and_run_at("(@6)", vm, CompileParam(RIGHT, 0, 2, true));
-		eval_and_run_at("(K (@6))", vm, CompileParam(RIGHT, 0, 9, true));
-		eval_and_run_at("zombie (@5)(@9)", vm, CompileParam(RIGHT, 0, 129, false));
-		eval_and_run_at("clear", vm, CompileParam(RIGHT, 0, 9, false));
+		el = eval_and_run_at("(*n6)", vm, CompileParam(RIGHT, imm, n2, true), ch);
+		el = eval_and_run_at("(K (*n6))", vm, CompileParam(RIGHT, imm, n9, true), ch);
+		el = eval_and_run_at("zombie (*n5)(*n9)", vm, CompileParam(RIGHT, imm, n129, false), ch);
+		el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n9, false), ch);
 		
-		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 5, true));
-		eval_and_run_at("succ", vm, CompileParam(LEFT, 0, 6, true));
-	}
-}
+		el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n5, true), ch);
+		el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n6, true), ch);
+		
+#if ENABLE_SIM
+		for(int i = 255; i >= 0; i--) {
+			if(opp[i].v == 1) {
+				vm["e"] = 255 - i;
+				VSlot dec_op = vsa.alloc_vslot("dec_op");
+				
+				el = eval_and_run_at("dec ($e)", vm, CompileParam(RIGHT, imm, dec_op, false), ch);
+				
+				vsa.free_vslot(dec_op);
+			}
+		}
 #endif
-
+	}
+}
 
 }
