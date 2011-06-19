@@ -86,11 +86,11 @@ zombie_help2()
 }
 
 bool
-check_revive_using_vslot(CriticalHandler & ch, var_map_t & vm) {
+check_revive_using_vslots(CriticalHandler & ch, var_map_t & vm) {
 	
 	bool execute_revise = false;
 	
-	dump_slots();
+//	dump_slots();
 	for(int i = 0; i < 256; i++) {
 		if(pro[i].v == 0){
 			if(vsa.states[i] == VirtualSlotAllocator::USED) {
@@ -111,6 +111,27 @@ check_revive_using_vslot(CriticalHandler & ch, var_map_t & vm) {
 	return execute_revise;
 }
 
+bool check_and_revive_using_vslot(CriticalHandler & ch, var_map_t & vm, const char* name) {
+	int slot_id = vsa.name_to_slot[name];
+	fprintf(stderr, "check slot(%s): %d %d\n", name, slot_id, pro[slot_id].v);
+	if(pro[slot_id].v == 0) {
+		vm["e"] = slot_id;
+		
+		VSlot revise_op = vsa.alloc_vslot("revise_op");
+		VSlot imm2 = vsa.alloc_vslot("imm2");
+		eval_and_run_at("clear", vm, CompileParam(RIGHT, imm2, revise_op, false), ch);
+		eval_and_run_at("clear", vm, CompileParam(RIGHT, imm2, imm2, false), ch);
+		
+		eval_and_run_at("revive ($e)", vm, CompileParam(RIGHT, imm2, revise_op, false), ch);
+		
+		vsa.free_vslot(imm2);
+		vsa.free_vslot(revise_op);
+		
+		return true;
+	}
+	return false;
+}
+
 void
 zombie_help()
 {
@@ -120,23 +141,54 @@ zombie_help()
 
 	VSlot imm = vsa.alloc_vslot("imm");
 	
+	VSlot n1 = vsa.alloc_vslot("n1");
 	VSlot n2 = vsa.alloc_vslot("n2");
 	VSlot n5 = vsa.alloc_vslot("n5");
 	VSlot n3 = vsa.alloc_vslot("n3");
+	
 	VSlot n4 = vsa.alloc_vslot("n4");
 	VSlot n8 = vsa.alloc_vslot("n8");
 	VSlot n12 = vsa.alloc_vslot("n12");
 	VSlot n15 = vsa.alloc_vslot("n15");
+	
 	VSlot n129 = vsa.alloc_vslot("n129");
 	
 	while (1) {
 		el = eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, imm, n8, false), ch);
-
 		el = eval_and_run_at("S I I (*n8)", vm, CompileParam(RIGHT, imm, n3, false), ch);
+		if(check_and_revive_using_vslot(ch, vm, "imm") 
+			|check_and_revive_using_vslot(ch, vm, "n8") 
+			| check_and_revive_using_vslot(ch, vm, "n3")) 
+		{
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n3, false), ch);
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n8, false), ch);
+			continue;
+		}
 		
-		el = eval_and_run_at("(S(K(S(K(S(K(S(((*n3)(help))(10000))(succ)))(dbl)))))(K))", 
-			vm, CompileParam(RIGHT, imm, n12, false), ch);
-		el = eval_and_run_at("S (zombie) (*n12)", vm, CompileParam(RIGHT, imm, n4, false), ch);
+		bool ok1 = true;
+		while(1) {
+			el = eval_and_run_at("(S(K(S(K(S(K(S(((*n3)(help))(10000))(succ)))(dbl)))))(K))", 
+				vm, CompileParam(RIGHT, imm, n12, false), ch);
+			if(check_and_revive_using_vslot(ch, vm, "imm") 
+				| check_and_revive_using_vslot(ch, vm, "n3")) 
+			{
+				el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n3, false), ch);
+				ok1 = false;
+				break;
+			}
+			
+			el = eval_and_run_at("S (zombie) (*n12)", vm, CompileParam(RIGHT, imm, n4, false), ch);
+			if(check_and_revive_using_vslot(ch, vm, "imm") 
+				| check_and_revive_using_vslot(ch, vm, "n12") 
+				| check_and_revive_using_vslot(ch, vm, "n4")) 
+			{
+				el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n4, false), ch);
+				el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n12, false), ch);
+				continue;
+			}
+			break;
+		}
+		if(!ok1) continue;
 		
 		el = eval_and_run_at("(attack)", vm, CompileParam(RIGHT, imm, n3, true), ch);
 		el = eval_and_run_at("(5632)", vm, CompileParam(RIGHT, imm, n3, true), ch);
@@ -152,29 +204,32 @@ zombie_help()
 		el = eval_and_run_at("(*n15)", vm, CompileParam(RIGHT, imm, n3, true), ch);;
 		
 		el = eval_and_run_at("(S (*n3) (*n4))", vm, CompileParam(RIGHT, imm, n2, false), ch);
-#if ENABLE_SIM
-		bool execute_revise = check_revive_using_vslot(ch, vm);
-		if(execute_revise) {
-			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n2, false), ch);
+		
+		if(check_and_revive_using_vslot(ch, vm, "imm") 
+			|check_and_revive_using_vslot(ch, vm, "n3") 
+			| check_and_revive_using_vslot(ch, vm, "n4")
+			| check_and_revive_using_vslot(ch, vm, "n15")) 
+		{
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n3, false), ch);
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n4, false), ch);
-			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n8, false), ch);
-			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n12, false), ch);
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n15, false), ch);
-		} else {
-			break;
+			continue;
 		}
-#else
+		
 		break;
-#endif
 	}
+	vsa.free_vslot(n4);
+	vsa.free_vslot(n8);
+	vsa.free_vslot(n12);
+	vsa.free_vslot(n15);
 	
 	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
 	int n5i = 0;
+	el = eval_and_run_at("!(*n2)(*n5)", vm, CompileParam(RIGHT, imm, n1, false), ch);
 	
-	while (1) {
-		if(opp[n5i * 2].v == 10000) {
-			el = eval_and_run_at("(*n2)(*n5)", vm, CompileParam(RIGHT, imm, n129, false), ch);
+	while (1) {		
+		if(opp[n5i * 2].v >= 10000) {
+			el = eval_and_run_at("(*n1)(0)", vm, CompileParam(RIGHT, imm, n129, false), ch);
 		} else {
 			el = eval_and_run_at("(*n3)(*n5)", vm, CompileParam(RIGHT, imm, n129, false), ch);
 		}
@@ -188,7 +243,6 @@ zombie_help()
 			el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n5, true), ch);
 		}
 		
-#if ENABLE_SIM
 		for(int i = 255; i >= 0; i--) {
 			if(opp[i].v == 1) {
 				vm["e"] = 255 - i;
@@ -199,15 +253,12 @@ zombie_help()
 				vsa.free_vslot(dec_op);
 			}
 		}
-		bool execute_revise = check_revive_using_vslot(ch, vm);
+		bool execute_revise = check_revive_using_vslots(ch, vm);
 		if(execute_revise) {
-			// n129: clear
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n129, false), ch);
-			// n5, n6: zero
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n5, false), ch);
 			el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
 		}
-#endif
 	}
 }
 
