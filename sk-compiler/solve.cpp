@@ -332,7 +332,7 @@ apply(event_list_t &events,
 
 			if (is_pro) {
 				if (is_zombie_apply) {
-					if (in_range(pro[idx].v, 1, 65535)) {
+					if (in_range(pro[idx].v, 1, 65536)) {
 						pro[idx].v--;
 						if (pro[idx].v <= 0) {
 							events.push_back(Event::dead(Event::PROP_DEAD, idx));
@@ -340,18 +340,18 @@ apply(event_list_t &events,
 						stats.count_attacked(OPP, idx); ///
 					}
 				} else {
-					if (in_range(pro[idx].v, 1, 65535)) {
+					if (in_range(pro[idx].v, 1, 65536)) {
 						pro[idx].v++;
 					}
 				}
 			} else {
 				if (is_zombie_apply) {
-					if (in_range(opp[idx].v, 1, 65535)) {
+					if (in_range(opp[idx].v, 1, 65536)) {
 						opp[idx].v--;
 						stats.count_attacked(PRO, idx); ///
 					}
 				} else {
-					if (in_range(opp[idx].v, 1, 65535)) {
+					if (in_range(opp[idx].v, 1, 65536)) {
 						opp[idx].v++;
 					}
 				}
@@ -379,22 +379,22 @@ apply(event_list_t &events,
 
 			if (is_pro) {
 				if (is_zombie_apply) {
-					if (in_range(opp[255-idx].v, 1, 65535)) {
+					if (in_range(opp[255-idx].v, 1, 65536)) {
 						opp[255-idx].v++;
 					}
 				} else {
-					if (in_range(opp[255-idx].v, 1, 65535)) {
+					if (in_range(opp[255-idx].v, 1, 65536)) {
 						opp[255-idx].v--;
 						stats.count_attacked(PRO, 255-idx); ///
 					}
 				}
 			} else {
 				if (is_zombie_apply) {
-					if (in_range(pro[255-idx].v, 1, 65535)) {
+					if (in_range(pro[255-idx].v, 1, 65536)) {
 						pro[idx].v++;
 					}
 				} else {
-					if (in_range(pro[255-idx].v, 1, 65535)) {
+					if (in_range(pro[255-idx].v, 1, 65536)) {
 						pro[idx].v--;
 						if (pro[idx].v <= 0) {
 							events.push_back(Event::dead(Event::PROP_DEAD, idx));
@@ -420,7 +420,6 @@ apply(event_list_t &events,
 			if (in_range(i->u.int_val, 0, 256)) {
 				return nothing();
 			}
-				
 
 			if (is_pro) {
 				y = opp[i->u.int_val].f;
@@ -436,6 +435,10 @@ apply(event_list_t &events,
 			//   return I
 			i = func->u.func.args[0];
 			if (! i->is_number) {
+				return nothing();
+			}
+
+			if (in_range(i->u.int_val, 0, 256)) {
 				return nothing();
 			}
 
