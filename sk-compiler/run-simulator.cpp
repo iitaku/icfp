@@ -32,13 +32,16 @@ int revive_trigger(const event_list_t& event_list, expr* e, var_map_t& vm)
     return 0;
 }
 
-void update_state(commands coms)
+void update_state(commands &coms)
 {
     for (int i=0; i<coms.size(); i++) {
         apply_card(coms[i].card, coms[i].lr,
 				   coms[i].slot, true);
         dump_slots();
+
+        apply_card(CARD_I, RIGHT, 0, false);
     }
+    coms.clear();
 }
 
 void sim(void)
@@ -50,17 +53,28 @@ void sim(void)
         var_map_t vm;
 
         int step = 0;
-        
         commands coms;
 
-        hooks.programs.push_back(Hook("revive ($i)", vm, CompileParam(LEFT, 0, 128, false), ch, revive_trigger));
-       
+        //hooks.programs.push_back(Hook("revive ($i)", vm, CompileParam(LEFT, 0, 128, false), ch, revive_trigger));
+
+        eval_at(coms, "10000", vm, CompileParam(LEFT, 0, 8, false));
+        update_state(coms);
         eval_at(coms, "attack (3)(4)(8192)", vm, CompileParam(LEFT, 0, 4, false));
+        update_state(coms);
+        eval_at(coms, "attack (4)(4)(8192)", vm, CompileParam(LEFT, 0, 4, false));
+        update_state(coms);
+        eval_at(coms, "(S (K (help (0) (1))) (K (@8)))",
+                vm, CompileParam(RIGHT,0,3,false));
+        update_state(coms);
+        eval_at(coms, "zombie (4) @3",
+                vm, CompileParam(RIGHT,0,4,false));
         update_state(coms);
         
         //eval_at(coms, "attack (10)(11)(8192)", vm, CompileParam(LEFT, 0, 4, false));
         //update_state(coms);
     }
+
+    dump_slots();
 }
 
 int
