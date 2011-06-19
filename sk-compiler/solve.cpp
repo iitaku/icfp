@@ -121,7 +121,7 @@ apply(event_list_t &events,
 				return nothing();
 			}
 			int ii = i->u.int_val;
-			int jj = i->u.int_val;
+			int jj = j->u.int_val;
 			int nn = n->u.int_val;
 
 			if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
@@ -165,7 +165,7 @@ apply(event_list_t &events,
 				return nothing();
 			}
 			int ii = i->u.int_val;
-			int jj = i->u.int_val;
+			int jj = j->u.int_val;
 			int nn = n->u.int_val;
 
 			if (ii < 0 || ii >= N_SLOTS || jj < 0 || jj >= N_SLOTS) {
@@ -530,7 +530,7 @@ dump_slots()
 		if (is_disp_omit(pro[i])) {
 			/* omitted */
 		} else {
-			fprintf(stderr, "p%d: v=%d, f=", i, pro[i].v);
+			fprintf(stderr, "pro%d: v=%d, f=", i, pro[i].v);
 			dump_card(pro[i].f);
 			fprintf(stderr, "\n");
 		}
@@ -540,7 +540,7 @@ dump_slots()
 		if (is_disp_omit(opp[i])) {
 			/* omitted */
 		} else {
-			fprintf(stderr, "p%d: v=%d, f=", i, opp[i].v);
+			fprintf(stderr, "opp%d: v=%d, f=", i, opp[i].v);
 			dump_card(opp[i].f);
 			fprintf(stderr, "\n");
 		}

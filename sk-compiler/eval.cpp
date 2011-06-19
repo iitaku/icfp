@@ -2,9 +2,13 @@
 #include "expr.hpp"
 #include "translators.hpp"
 #include "command.hpp"
+#include "hook-program.hpp"
+
 #include <assert.h>
 
 namespace copy_kawaii {
+
+HookCollection hooks;
 
 void
 eval_at(commands &coms,
@@ -38,6 +42,8 @@ eval_at(commands &coms,
         const char *prog, var_map_t &vm,
         CompileParam const &cp)
 {
+    hooks.check_and_eval_at();
+    
     expr *e = parse_expr(prog, cp);
     eval_at(coms, e, vm, cp);
 }
@@ -83,6 +89,8 @@ eval_and_run_at(const char *prog,
                 CompileParam const &cp,
                 CriticalHandler &ch)
 {
+    hooks.check_and_eval_and_run_at();
+    
     commands coms;
     eval_at(coms, prog, vm, cp);
 

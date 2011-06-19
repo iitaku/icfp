@@ -2,10 +2,10 @@ project(sk-compiler)
 cmake_minimum_required(VERSION 2.8)
 
 
-add_definitions(-Wall
-  -Werror
-  -Wno-sign-compare
-  )
+#add_definitions(-Wall
+#  -Werror
+#  -Wno-sign-compare
+#  )
 #add_definitions("-D WITH_SLEEP")
 
 set(SOURCE ltg-opt.cpp 
@@ -19,8 +19,8 @@ set(SOURCE ltg-opt.cpp
            eval.cpp
            zombie-help.cpp
            demos.cpp
-           virtual-slot.cpp
-           mempool.cpp)
+           virtual-slot.cpp)
+           #mempool.cpp)
 
 file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")
