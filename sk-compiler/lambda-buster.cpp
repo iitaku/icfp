@@ -4,6 +4,7 @@
 #include "eval.hpp"
 #include "solve.hpp"
 #include "virtual-slot.hpp"
+#include "hook-program.hpp"
 
 #define ENABLE_SIM 1
 
@@ -38,6 +39,17 @@ bool check_revive_using_vslot(CriticalHandler & ch, var_map_t & vm)
 
 extern bool check_revive_using_vslot(CriticalHandler & ch, var_map_t & vm);
 
+//typedef int (*TriggerFunc_t)(const event_list_t& event_list, expr* e, var_map_t& vm);
+int trigger_func(const event_list_t& event_list, expr* e, var_map_t& vm)
+{
+	if (!stats.opp.slots.empty()) {
+		///
+		return 1;
+	}
+
+	return 0;
+}
+
 void lambda_buster()
 {
 	CriticalHandler ch;
@@ -54,6 +66,9 @@ void lambda_buster()
 	VSlot n12 = vsa.alloc_vslot("n12");
 	VSlot n15 = vsa.alloc_vslot("n15");
 	VSlot n129 = vsa.alloc_vslot("n129");
+
+    Hook hook("*x", vm, CompileParam(RIGHT, imm, n3, false), ch, &trigger_func);
+	hooks.programs.push_back(hook);
 
 	while (1) {
 		el = eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, imm, n8, false), ch);
