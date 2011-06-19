@@ -12,6 +12,7 @@ void demo_vslot();
 void demo_robust_zombie();
 
 void test_attack0();
+void test_selfcare();
 
 }
 

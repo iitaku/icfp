@@ -54,6 +54,8 @@ main(int argc, char **argv)
 
 #ifdef ATTACK0
     test_attack0();
+#elif defined SELFCARE
+    test_selfcare();
 #elif defined ROBUST_ZOMBIE
     //demo_robust_zombie();
 #elif defined ZOMBIE_HELP
