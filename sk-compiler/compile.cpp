@@ -7,6 +7,16 @@
 
 namespace copy_kawaii {
 
+struct state {
+    int imm_slot_val;
+};
+
+static void compile_st(state &st,
+                       commands &dst,
+                       const expr *src,
+                       CompileParam const &cp);
+
+
 #if 0
 static int
 genint_cost(int val)
@@ -51,15 +61,21 @@ emit_bit_shift(commands &dst, int val, int slot)
 }
 
 static void
-generate_imm(commands &dst,
+generate_imm(state &st,
+             commands &dst,
              const expr *src,
              const CompileParam &cp)
 {    
     int n = src->u.int_val;
 
-    dst.push_back(command(LEFT, cp.imm_slot, CARD_PUT));
-    dst.push_back(command(RIGHT, cp.imm_slot, CARD_ZERO));
-    emit_bit_shift(dst, n, cp.imm_slot);
+    if (st.imm_slot_val == n) {
+        /* reuse prev val */
+    } else {
+        dst.push_back(command(LEFT, cp.imm_slot, CARD_PUT));
+        dst.push_back(command(RIGHT, cp.imm_slot, CARD_ZERO));
+        emit_bit_shift(dst, n, cp.imm_slot);
+        st.imm_slot_val = n;
+    }
 
     dst.push_back(command(RIGHT, cp.prog_slot, CARD_ZERO));
 }
@@ -76,7 +92,8 @@ direct_int(commands &dst,
 }
 
 static void
-do_compile(commands &dst,
+do_compile(state &st,
+           commands &dst,
            const expr *src,
            const CompileParam &cp)
 {
@@ -90,14 +107,14 @@ do_compile(commands &dst,
         const expr *a = src->u.apply.a;
 
         if (f->code == expr::CARD) {
-            compile(dst, a, cp);
+            compile_st(st, dst, a, cp);
             dst.push_back(command(LEFT, cp.prog_slot, f->u.card));
         } else if (a->code == expr::CARD) {
-            compile(dst, f, cp);
+            compile_st(st, dst, f, cp);
             dst.push_back(command(RIGHT, cp.prog_slot, a->u.card));
         } else if (a->code == expr::GENERATE_IMM) {
-            compile(dst, f, cp);
-            generate_imm(dst, a, cp);
+            compile_st(st, dst, f, cp);
+            generate_imm(st, dst, a, cp);
         } else {
             fprintf(stderr, "invalid expr");
             assert(0);
@@ -106,7 +123,7 @@ do_compile(commands &dst,
         break;
 
     case expr::GENERATE_IMM: {
-        generate_imm(dst, src, cp);
+        generate_imm(st, dst, src, cp);
     }
         break;
 
@@ -134,12 +151,24 @@ do_compile(commands &dst,
     }
 }
 
+static void
+compile_st(state &st,
+           commands &dst,
+           const expr *src,
+           CompileParam const &cp)
+{
+    do_compile(st, dst, src, cp);
+}
+
+
 void
 compile(commands &dst,
         const expr *src,
         CompileParam const &cp)
 {
-    do_compile(dst, src, cp);
+    state st;
+    st.imm_slot_val = -1;
+    compile_st(st, dst, src, cp);
 }
 
 
