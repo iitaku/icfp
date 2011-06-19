@@ -43,7 +43,7 @@ eval_at(commands &coms,
         const char *prog, var_map_t &vm,
         CompileParam const &cp)
 {
-    fprintf(stderr, "eval : %s\n", prog);
+    //fprintf(stderr, "eval : %s\n", prog);
 
     expr *e = parse_expr(prog, cp);
     eval_at(coms, e, vm, cp);

@@ -63,27 +63,14 @@ void sim(void)
         int step = 0;
         commands coms;
 
-        //hooks.programs.push_back(Hook("revive ($i)", vm, CompileParam(LEFT, 0, 128, false), ch, revive_trigger));
-
-        eval_at(coms, "0", vm, CompileParam(LEFT, 0, 12, false));
+        eval_at(coms, "8192", vm, CompileParam(RIGHT, 0, 1, false));
         update_state(coms);
-
-        eval_at(coms, "10000", vm, CompileParam(LEFT, 0, 8, false));
+        eval_at(coms, "255", vm, CompileParam(RIGHT, 0, 2, false));
         update_state(coms);
-
-        eval_at(coms, "attack (3)(4)(6000)", vm, CompileParam(LEFT, 3, 4, false));
+	eval_at(coms, "attack (3)(@2)(@1)", vm, CompileParam(RIGHT, 0, 128, false));
         update_state(coms);
-        eval_at(coms, "attack (4)(5)(5000)", vm, CompileParam(LEFT, 3, 4, false));
+	eval_at(coms, "attack (4)(@2)(@1)", vm, CompileParam(RIGHT, 0, 128, false));
         update_state(coms);
-        eval_at(coms, "(S (K (help (0) (1))) (K (@8)))",
-                vm, CompileParam(RIGHT,0,3,false));
-        update_state(coms);
-        eval_at(coms, "zombie (4) @3",
-                vm, CompileParam(RIGHT,0,4,false));
-        update_state(coms);
-        
-        //eval_at(coms, "attack (10)(11)(8192)", vm, CompileParam(LEFT, 0, 4, false));
-        //update_state(coms);
     }
 
     dump_slots();
