@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#define ENABLE_SIM 0
+#define ENABLE_SIM 1
 //#define ENABLE_SIM 0
 //#define DUEL_WITH_IDIOT_PROGRAM
 

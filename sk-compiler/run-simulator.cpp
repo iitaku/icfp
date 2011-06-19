@@ -63,13 +63,9 @@ void sim(void)
         int step = 0;
         commands coms;
 
-        eval_at(coms, "8192", vm, CompileParam(RIGHT, 0, 1, false));
-        update_state(coms);
-        eval_at(coms, "255", vm, CompileParam(RIGHT, 0, 2, false));
-        update_state(coms);
-	eval_at(coms, "attack (3)(@2)(@1)", vm, CompileParam(RIGHT, 0, 128, false));
-        update_state(coms);
-	eval_at(coms, "attack (4)(@2)(@1)", vm, CompileParam(RIGHT, 0, 128, false));
+        eval_at(coms, "5", vm, CompileParam(RIGHT, 4, 1, false));
+        eval_at(coms, "(S (K (S (K (S (I )(I )))(get )))(get ))", vm, CompileParam(RIGHT, 0, 1, false));
+        eval_at(coms, "zero", vm, CompileParam(RIGHT, 0, 1, true));
         update_state(coms);
     }
 

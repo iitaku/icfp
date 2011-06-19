@@ -5,7 +5,7 @@
 #include "solve.hpp"
 #include "virtual-slot.hpp"
 
-#define DUMP false
+#define DUMP true
 
 namespace copy_kawaii {
 
@@ -502,9 +502,13 @@ apply(event_list_t &events,
 
 		assert(0);
 	} else {
-		func->u.func.args[func->u.func.cur_num_applied] = arg;
-		func->u.func.cur_num_applied++;
-		return func;
+		Card *applied = card_deep_copy(func);
+		int n = func->u.func.cur_num_applied;
+
+		applied->u.func.args[n] = arg;
+		applied->u.func.cur_num_applied = n+1;
+
+		return applied;
 	}
 }
 
