@@ -1,5 +1,33 @@
 #!/usr/bin/ruby
 
+if ARGV.size == 0
+    print <<EOS
+log-analyzer.rb repl              FILE
+log-analyzer.rb slot        t p n FILE
+log-analyzer.rb slot-trace  p n   FILE
+log-analyzer.rb slot-player p     FILE
+log-analyzer.rb slot-all          FILE
+
+t -- turn (1始まり)
+p -- player (0 or 1)
+n -- slot (0始まり)
+EOS
+end
+
+class HelpCmd
+    def do(args)
+        print <<EOS
+slot        t p n   -- print slot info about t\'th turn, p\'th player, n\'th slot
+slot-trace  p n     -- print slot info about all turn p\'th player, n\'th slot
+slot-player p       -- print all turn, p\'th player, all slot
+slot-all            -- print all turn, all player, all slot
+quit                -- quit program
+help                -- print help
+EOS
+
+    end
+end
+
 # definition of LTG 
 class Slot
     def initialize(vital=100000, field="I")
@@ -80,49 +108,14 @@ class Game
     end
 end
 
-=begin
-# repl commands
-class NoCmd
-    def do(args)
-        return
+def print_slot(turn, player, index, slot)
+    printf("%d : %d : %d : {%d,%s}\n", (turn + 1), player, index, slot.vital, slot.field)
+end
 
-class FileCmd
-    def check(args)
-        if 1 != len(args)
-            raise Exception("Invalid Arg.")
-        return   
-    def do(args)
-        @check(args)
-        filename = head(args)
-        analyze(filename)
-        return
-
-class GameCmd
-    global game
-
-    def check(args)
-        if 0 != len(args)
-            raise Exception("Invalid arg.")
-        return
-    def do(args)
-        @check(args)
-        print 'player 0 : %d' % game.alive[0]
-        print 'player 1 : %d' % game.alive[1]
-        return
-
-class TableCmd
-    def check(args)
-        return   
-    def do(args)
-        return
-
-class DeckCmd
-    def check(args)
-        return   
-    def do(args)
-        return
-
-=end
+class NopCmd
+    def do()
+    end
+end
 
 class SlotCmd
     def check(args)
@@ -155,24 +148,45 @@ class SlotTraceCmd
         index = args.shift.to_i
         for turn in 0 ... $game.size_turn
             slot = $game.get_slot(turn, player, index)
-            printf("%d : {%d,%s}\n", (turn + 1), slot.vital, slot.field)
+            print_slot(turn, player, index, slot)
         end
     end
 end
 
-class HelpCmd
-    def do(args)
-=begin
-file path  -- load log file
-game       -- print game info
-=end
-        print <<EOS
-slot t p n      -- print slot info about t\'th turn, p\'th player, n\'th slot
-slot-trace p n  -- print slot info about all turn p\'th player, n\'th slot
-quit            -- quit program
-help            -- print help
-EOS
+class SlotPlayerCmd
+    def check(args)
+        raise "Invalid Arg." if 1 != args.size
+    end
 
+    def do(args)
+        check(args)
+
+        player = args.shift.to_i
+        for turn in 0 ... $game.size_turn
+            for index in 0 .. 255
+                slot = $game.get_slot(turn, player, index)
+                print_slot(turn, player, index, slot)
+            end
+        end
+    end
+end
+
+class SlotAllCmd
+    def check(args)
+        raise "Invalid Arg." if 0 != args.size
+    end
+
+    def do(args)
+        check(args)
+
+        for turn in 0 ... $game.size_turn
+            for player in 0 .. 1
+                for index in 0 .. 255
+                    slot = $game.get_slot(turn, player, index)
+                    print_slot(turn, player, index, slot)
+                end
+            end
+        end
     end
 end
 
@@ -181,16 +195,12 @@ $game = nil
 
 # command list
 COMMAND_LIST = { 
-=begin
-    ''      => NoCmd(),
-    'file'  => FileCmd(),
-    'game'  => GameCmd(),
-    'table' => TableCmd(),
-    'deck'  => DeckCmd(),
-=end
-    'slot'  => SlotCmd.new,
-    'slot-trace' => SlotTraceCmd.new,
-    'help'  => HelpCmd.new }
+    ''            => NopCmd.new,
+    'slot'        => SlotCmd.new,
+    'slot-trace'  => SlotTraceCmd.new,
+    'slot-player' => SlotPlayerCmd.new,
+    'slot-all'    => SlotAllCmd.new,
+    'help'        => HelpCmd.new }
 
 def analyze(filename)
     File.open(filename) { |f|
@@ -237,6 +247,7 @@ def analyze(filename)
 end
 
 def repl()
+    analyze(ARGV.shift) if 0 < ARGV.size()
     print "Lambda: The Gathering -- Log Analyzer\n"
 
     while true
@@ -258,5 +269,20 @@ def repl()
     end
 end
 
-analyze(ARGV.shift) if 0 < ARGV.size()
-repl()
+first = ARGV.shift
+case first
+when "repl"
+    repl()
+when "slot"
+    analyze(ARGV.pop)
+    COMMAND_LIST["slot"].do(ARGV)
+when "slot-trace"
+    analyze(ARGV.pop)
+    COMMAND_LIST["slot-trace"].do(ARGV)
+when "slot-player"
+    analyze(ARGV.pop)
+    COMMAND_LIST["slot-player"].do(ARGV)
+when "slot-all"
+    analyze(ARGV.pop)
+    COMMAND_LIST["slot-all"].do(ARGV)
+end
