@@ -102,7 +102,7 @@ f(var_map_t &vars, const expr *e, CompileParam const &cp, bool top_level)
 
     case expr::GET_SLOT:
         return expr::apply(expr::card(CARD_GET),
-                           expr::generate_imm(e->u.slot));
+                           expand_integer(e->u.slot, cp.imm_slot, top_level));
 
     case expr::CLEAR:
         return expr::clear();
