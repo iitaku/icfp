@@ -19,6 +19,7 @@ set(SOURCE ltg-opt.cpp
            zombie-help.cpp
            demos.cpp
            nakamura.cpp
+		   lambda-buster.cpp
            virtual-slot.cpp)
            #mempool.cpp)
 
@@ -70,6 +71,9 @@ set_target_properties(selfcare PROPERTIES COMPILE_FLAGS "-D SELFCARE")
 
 add_executable(nakamura ${SOURCE})
 set_target_properties(nakamura PROPERTIES COMPILE_FLAGS "-D NAKAMURA")
+
+add_executable(lambda-buster ${SOURCE})
+set_target_properties(lambda-buster PROPERTIES COMPILE_FLAGS "-D LAMBDA_BUSTER")
 
 #add_executable(pro ${SOURCE})
 #add_executable(opp ${SOURCE})

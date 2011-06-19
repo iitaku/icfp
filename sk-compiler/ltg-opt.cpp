@@ -64,6 +64,8 @@ main(int argc, char **argv)
     zombie_help();
 #elif defined NAKAMURA
     nakamura::zombie_attack0();
+#elif defined LAMBDA_BUSTER
+	lambda_buster();
 #else
     //zombie_help();
     //demo_left();

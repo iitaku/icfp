@@ -18,6 +18,8 @@ namespace nakamura {
 void zombie_attack0();
 }
 
+void lambda_buster();
+
 }
 
 #endif
