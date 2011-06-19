@@ -23,7 +23,13 @@ genint_cost(int val)
     return max_bitpos + bit_count;
 }
 
+#if defined(DUEL_IN_LOCAL)
+VirtualSlotAllocator vsa_[2];
+__thread VirtualSlotAllocator* vsa;
+#else
 VirtualSlotAllocator vsa;
+#endif
+
 
 VSlot
 VirtualSlotAllocator::alloc_vslot(const char *name,

@@ -10,9 +10,22 @@
 #define ENABLE_SIM 1
 //#define ENABLE_SIM 0
 
+#if defined(DUEL_IN_LOCAL)
+#include <pthread.h>
+#endif
+
 namespace copy_kawaii {
+#if defined(DUEL_IN_LOCAL)
+pthread_mutex_t lock;
+volatile int which_player = 0;
+__thread int player_no;
+
+__thread FILE *from_opponent;
+__thread FILE *to_opponent;
+#else
 FILE *from_opponent;
 FILE *to_opponent;
+#endif
 
 void
 dump_commands(commands const &com)
@@ -31,7 +44,14 @@ dump_commands(commands const &com)
     }
 }
 
+#if defined(DUEL_IN_LOCAL)
 char line[1024*1024];
+char line_mode[1024*1024];
+char line_slot[1024*1024];
+char line_card[1024*1024];
+#else
+char line[1024*1024];
+#endif
 
 void
 read_line(FILE *fp)
@@ -63,8 +83,19 @@ struct command_line
 get_command_line(FILE *fp)
 {
     command_line ret;
-#ifdef DUEL_WITH_IDIOT_PROGRAM
+#if defined(DUEL_WITH_IDIOT_PROGRAM)
     line[0] = '1';
+#elif defined(DUEL_IN_LOCAL)
+    while(true)
+    {
+        pthread_mutex_lock(&lock);
+        int current_player = which_player;
+        pthread_mutex_unlock(&lock);
+        if (current_player == player_no) {
+            line[0] = line_mode[0];
+            break;
+        }
+    }
 #else
     read_line(fp);
 #endif
@@ -75,33 +106,53 @@ get_command_line(FILE *fp)
         ret.com.lr = RIGHT;
     }
 
-
     if (ret.com.lr == LEFT) {
-#ifdef DUEL_WITH_IDIOT_PROGRAM        
+#if defined(DUEL_WITH_IDIOT_PROGRAM)
         std::pair<std::string, enum card_code> card = std::make_pair("I", get_card_code("I"));
+#elif defined(DUEL_IN_LOCAL)
+        std::pair<std::string, enum card_code> card = std::make_pair(line_card, get_card_code(line_card));
 #else
         std::pair<std::string, enum card_code> card = read_card();
 #endif
         ret.com.card = card.second;
 
-#ifdef DUEL_WITH_IDIOT_PROGRAM        
+#if defined(DUEL_WITH_IDIOT_PROGRAM)
         ret.com.slot = 0;
+#elif defined(DUEL_IN_LOCAL)
+        ret.com.slot = atoi(line_slot);
 #else
         ret.com.slot = read_slot();
 #endif
 
         if (ENABLE_SIM) {
+/* Local対戦モードの場合、書き込み側だけが状態を更新する */
+#if !defined(DUEL_IN_LOCAL)
             ret.events = apply_card(card.second,
                                     LEFT, ret.com.slot, false);
+#endif
         }
     } else {
+
+#if defined(DUEL_IN_LOCAL)
+#else
         ret.com.slot = read_slot();
+#endif
+        
+#if defined(DUEL_IN_LOCAL)
+        std::pair<std::string, enum card_code> card = std::make_pair(line, get_card_code(line));
+#else
         std::pair<std::string, enum card_code> card = read_card();
+#endif        
+
         ret.com.card = card.second;
 
         if (ENABLE_SIM) {
+/* Local対戦モードの場合、書き込み側だけが状態を更新する */
+#if !defined(DUEL_IN_LOCAL)
+#else
             ret.events = apply_card(card.second,
                                     RIGHT, ret.com.slot, false);
+#endif
         }
     }
 
@@ -117,10 +168,20 @@ write_line(command const &com) {
     assert(com.slot < 256);
 
     if (com.lr == LEFT) {
+        
+#if defined(DUEL_IN_LOCAL)
+        sprintf(line_mode, "1\0");
+        sprintf(line_card, "%s\0", name);
+        sprintf(line_slot, "%d\0", com.slot);
+        pthread_mutex_lock(&lock);
+        which_player = which_player ^ 1;
+        pthread_mutex_unlock(&lock);
+#else
         fprintf(to_opponent, "1\n");
         fprintf(to_opponent, "%s\n", name);
         fprintf(to_opponent, "%d\n", com.slot);
         fflush(to_opponent);
+#endif
 
         if (dump) {
             fprintf(stderr, "1\n");
@@ -133,10 +194,19 @@ write_line(command const &com) {
             ret = apply_card(com.card, LEFT, com.slot, true);
         }
     } else {
+#if defined(DUEL_IN_LOCAL)
+        sprintf(line_mode, "1\0");
+        sprintf(line_card, "%s\0", name);
+        sprintf(line_slot, "%d\0", com.slot);
+        pthread_mutex_lock(&lock);
+        which_player = which_player ^ 1;
+        pthread_mutex_unlock(&lock);
+#else
         fprintf(to_opponent, "2\n");
         fprintf(to_opponent, "%d\n", com.slot);
         fprintf(to_opponent, "%s\n", name);
         fflush(to_opponent);
+#endif
 
         if (dump) {
             fprintf(stderr, "2\n");
