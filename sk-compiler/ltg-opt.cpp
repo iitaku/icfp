@@ -48,11 +48,9 @@ int
 main(int argc, char **argv)
 {
     if (argc >= 2) {
+        init(argv[1]);
         if (argv[1][0] == '1') {
-            init("1");
             get_command_line(from_opponent);
-        } else {
-            init("2");
         }
     } else {
         init("0");

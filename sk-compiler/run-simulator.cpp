@@ -47,7 +47,7 @@ void update_state(commands &coms)
         }
         dump_slots();
 
-        apply_card(CARD_I, RIGHT, 0, false);
+        apply_card(coms[i].card, coms[i].lr, coms[i].slot, false);
     }
     coms.clear();
 }

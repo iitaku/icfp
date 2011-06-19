@@ -5,7 +5,7 @@
 #include "solve.hpp"
 #include "virtual-slot.hpp"
 
-#define DUMP true
+#define DUMP false
 
 namespace copy_kawaii {
 
@@ -84,8 +84,11 @@ damage(event_list_t &events,
 	*v -= value;
 	if (*v <= 0) {
 		if (pro_opp == PRO) {
+			//fprintf(sim_log, "dead %d\n", idx);
 			events.push_back(Event::dead(Event::PROP_DEAD, idx));
 			VSA->states[idx] = VirtualSlotAllocator::DEAD;
+		} else {
+			//fprintf(sim_log, "kill %d\n", idx);
 		}
 		*v = 0;
 	}
@@ -130,6 +133,7 @@ apply(event_list_t &events,
 		return nothing();
 	}
 
+	dump_slots();
 	int full_num_arg = num_arg[func->card];
 	int remain = full_num_arg - func->u.func.cur_num_applied;
 

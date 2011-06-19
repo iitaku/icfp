@@ -150,7 +150,6 @@ get_command_line(FILE *fp)
         if (ENABLE_SIM) {
 /* Local対戦モードの場合、書き込み側だけが状態を更新する */
 #if !defined(DUEL_IN_LOCAL)
-#else
             ret.events = apply_card(card.second,
                                     RIGHT, ret.com.slot, false);
 #endif
@@ -225,7 +224,7 @@ write_line(command const &com) {
 #endif
 
     if (ENABLE_SIM) {
-        dump_slots();
+        //dump_slots();
     }
 
     return ret;

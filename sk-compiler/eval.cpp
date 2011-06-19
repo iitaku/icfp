@@ -15,7 +15,7 @@ eval_at(commands &coms,
         expr *expr, var_map_t &vm,
         CompileParam const &cp)
 {
-    bool dump = true;
+    bool dump = false;
     struct expr *iexpanded = expand_integer(vm, expr, cp);
 
     if (dump) {
@@ -66,10 +66,35 @@ gather_critical_event(event_list_t &dst,
         switch (ev.code) {
         case Event::PROP_DEAD: {
             if(ev.u.slot < MAX_NUM_VSLOT) {
+                if (ev.u.slot == 0 &&
+                    cl.auto_recovery_zero)
+                {
+                    VSlot prog_slot = VSA->alloc_vslot("revive0");
+                    var_map_t vm;
+                    CriticalHandler ch;
+
+                    if (! is_id(pro[prog_slot.slot].f)) {
+                        eval_and_run_at("clear",
+                                        vm,
+                                        CompileParam(RIGHT, prog_slot, prog_slot, false), ch);
+                    }
+
+                    event_list_t l = eval_and_run_at("revive zero",
+                                                     vm,
+                                                     CompileParam(RIGHT, prog_slot, prog_slot, true), ch);
+                    VSA->free_vslot(prog_slot);
+
+                    if (l.size() == 0) {
+                        continue;
+                    }
+                    dst.push_back(Event(Event::REVIVE_ZERO_FAILED));
+
+                }
+
 #if defined(DUEL_IN_LOCAL)
-            std::string slot_name = vsa->slot_to_name[ev.u.slot];
+                std::string slot_name = vsa->slot_to_name[ev.u.slot];
 #else
-            std::string slot_name = vsa.slot_to_name[ev.u.slot];
+                std::string slot_name = vsa.slot_to_name[ev.u.slot];
 #endif
 
                 critical_slots_t::const_iterator i = cl.critical_slots.begin(),
@@ -114,40 +139,6 @@ eval_and_run_at(expr *e,
 
         gather_critical_event(critical_event, write_event, ch);
         gather_critical_event(critical_event, cl.events, ch);
-
-            if (ch.auto_recovery_zero) {
-                event_list_t filtered;
-                for (int i=0; i<critical_event.size(); i++) {
-                    fprintf(stderr,
-                            "slot dead = %d\n",
-                            critical_event[i].u.slot);
-                    if (critical_event[i].code == Event::PROP_DEAD &&
-                        critical_event[i].u.slot == 0)
-                    {
-                        VSlot prog_slot = VSA->alloc_vslot("revive0");
-                        var_map_t vm;
-                        CriticalHandler ch;
-
-                        if (! is_id(pro[prog_slot.slot].f)) {
-                            eval_and_run_at("clear",
-                                            vm,
-                                            CompileParam(RIGHT, prog_slot, prog_slot, false), ch);
-                        }
-
-                        event_list_t l = eval_and_run_at("revive zero",
-                                                         vm,
-                                                         CompileParam(RIGHT, prog_slot, prog_slot, true), ch);
-                        if (l.size() != 0) {
-                            filtered.push_back(Event(Event::REVIVE_ZERO_FAILED));
-                        }
-                    } else {
-                        filtered.push_back(critical_event[i]);
-                    }
-                }
-
-                critical_event = filtered;
-            }
-
 
         if (critical_event.size() != 0) {
 

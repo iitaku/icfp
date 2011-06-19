@@ -47,7 +47,7 @@ get_card_code(const char* cn)
 
     if (i == name_to_card_map.end())
     {
-        return CARD_UNKNOWN;
+        return CARD_I;
     }
     
     return i->second;
