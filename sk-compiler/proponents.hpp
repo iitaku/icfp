@@ -14,6 +14,10 @@ void demo_robust_zombie();
 void test_attack0();
 void test_selfcare();
 
+namespace nakamura {
+void zombie_attack0();
+}
+
 }
 
 #endif

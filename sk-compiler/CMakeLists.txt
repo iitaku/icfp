@@ -18,6 +18,7 @@ set(SOURCE ltg-opt.cpp
            eval.cpp
            zombie-help.cpp
            demos.cpp
+           nakamura.cpp
            virtual-slot.cpp)
            #mempool.cpp)
 
@@ -46,7 +47,8 @@ add_executable(
   program.cpp
   compile.cpp
   eval.cpp
-  tool.cpp)
+  tool.cpp
+  )
 
 target_link_libraries(duel-simulator pthread)
 set_target_properties(duel-simulator PROPERTIES COMPILE_FLAGS "-D DUEL_IN_LOCAL")
@@ -65,6 +67,9 @@ set_target_properties(zombie-help PROPERTIES COMPILE_FLAGS "-D ZOMBIE_HELP")
 
 add_executable(selfcare ${SOURCE})
 set_target_properties(selfcare PROPERTIES COMPILE_FLAGS "-D SELFCARE")
+
+add_executable(nakamura ${SOURCE})
+set_target_properties(nakamura PROPERTIES COMPILE_FLAGS "-D NAKAMURA")
 
 #add_executable(pro ${SOURCE})
 #add_executable(opp ${SOURCE})
