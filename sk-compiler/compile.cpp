@@ -1,6 +1,7 @@
 #include "expr.hpp"
 #include "translators.hpp"
 #include "slots.hpp"
+#include "solve.hpp"
 #include <stdio.h>
 #include <assert.h>
 
@@ -50,9 +51,9 @@ emit_bit_shift(commands &dst, int val, int slot)
 }
 
 static void
-emit_inc_counter(commands &dst,
-                 const expr *src,
-                 const CompileParam &cp)
+generate_imm(commands &dst,
+             const expr *src,
+             const CompileParam &cp)
 {    
     int n = src->u.int_val;
 
@@ -60,9 +61,7 @@ emit_inc_counter(commands &dst,
     dst.push_back(command(RIGHT, cp.imm_slot, CARD_ZERO));
     emit_bit_shift(dst, n, cp.imm_slot);
 
-    /* get (succ zero) */
     dst.push_back(command(RIGHT, cp.prog_slot, CARD_ZERO));
-    emit_bit_shift(dst, cp.imm_slot, cp.prog_slot);
 }
 
 static void
@@ -96,9 +95,9 @@ do_compile(commands &dst,
         } else if (a->code == expr::CARD) {
             compile(dst, f, cp);
             dst.push_back(command(RIGHT, cp.prog_slot, a->u.card));
-        } else if (a->code == expr::EMIT_INC_COUNTER) {
+        } else if (a->code == expr::GENERATE_IMM) {
             compile(dst, f, cp);
-            emit_inc_counter(dst, a, cp);
+            generate_imm(dst, a, cp);
         } else {
             fprintf(stderr, "invalid expr");
             assert(0);
@@ -106,8 +105,8 @@ do_compile(commands &dst,
     }
         break;
 
-    case expr::EMIT_INC_COUNTER: {
-        emit_inc_counter(dst, src, cp);
+    case expr::GENERATE_IMM: {
+        generate_imm(dst, src, cp);
     }
         break;
 

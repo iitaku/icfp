@@ -43,6 +43,8 @@ eval_at(commands &coms,
         const char *prog, var_map_t &vm,
         CompileParam const &cp)
 {
+    fprintf(stderr, "eval : %s\n", prog);
+
     expr *e = parse_expr(prog, cp);
     eval_at(coms, e, vm, cp);
 
@@ -130,7 +132,6 @@ eval_and_run_at(const char *prog,
                 CompileParam const &cp,
                 CriticalHandler &ch)
 {
-   
     commands coms;
     eval_at(coms, prog, vm, cp);
 

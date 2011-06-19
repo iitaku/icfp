@@ -50,6 +50,18 @@ public:
 	}
 };
 
+static inline
+bool is_id(Card const *c) {
+	if (c->is_number) {
+		return false;
+	}
+
+	if (c->card != CARD_I) {
+		return false;
+	}
+	return true;
+}
+
 /* return nothing() if type error is occured */
 optional<Card *>apply(event_list_t &events,
 					  Card *func,
@@ -91,6 +103,7 @@ event_list_t apply_card(enum card_code card, enum lr_code lr, int slot, bool is_
 // proponent and opponents' slots
 extern std::vector<Slot> pro;
 extern std::vector<Slot> opp;
+extern FILE *sim_log;
 
 void dump_slots();
 

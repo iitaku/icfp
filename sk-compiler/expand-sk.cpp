@@ -54,11 +54,11 @@ expand_sk(const expr *src,
     }
         break;
 
-    case expr::EMIT_INC_COUNTER: {
+    case expr::GENERATE_IMM: {
         if (head) {
-            return expr::apply(head, expr::emit_inc_counter(src->u.int_val));
+            return expr::apply(head, expr::generate_imm(src->u.int_val));
         } else {
-            return expr::emit_inc_counter(src->u.int_val);
+            return expr::generate_imm(src->u.int_val);
         }
     }
         break;

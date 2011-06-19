@@ -24,6 +24,8 @@ void init()
 
     from_opponent = stdin;
     to_opponent = stdout;
+
+    sim_log = fopen("sim-log.txt", "wb");
 }
 
 program

@@ -6,11 +6,15 @@
 
 namespace copy_kawaii {
 
+FILE *sim_log;
+
 using namespace std;
 
 #if defined(DUEL_IN_LOCAL)
 #define TURN_MAX (100000)
 __thread int turn_count = 0;
+#else
+static int turn_count = 0;
 #endif
 
 static const int num_arg[] = {
@@ -56,7 +60,7 @@ Card *card_deep_copy(const Card *c)
 }
 
 /*
- * もう死んでてダーメジ与えられない場合はfalseを返す
+ * もう死んでてダメージ与えられない場合はfalseを返す
  */
 static bool
 damage(event_list_t &events,
@@ -508,6 +512,7 @@ apply_card(enum card_code cc,
 {
 	event_list_t events;
 	Slot *slt;
+	bool dump = false;
 
 	/* zombie apply */
 	if (is_pro) {
@@ -535,14 +540,28 @@ apply_card(enum card_code cc,
 	}
 #endif
 
-	if (lr== LEFT) {
-		fprintf(stderr, "apply %s (%d)\n",
-				get_card_name(cc),
-				slot);
-	} else {
-		fprintf(stderr, "apply %d (%s)\n",
-				slot,
-				get_card_name(cc));
+	if (dump) {
+		if (is_pro) {
+			if (lr== LEFT) {
+				fprintf(sim_log, "pro apply %s (%d)\n",
+						get_card_name(cc),
+						slot);
+			} else {
+				fprintf(sim_log, "pro apply %d (%s)\n",
+						slot,
+						get_card_name(cc));
+			}
+		} else {
+			if (lr== LEFT) {
+				fprintf(sim_log, "opp apply %s (%d)\n",
+						get_card_name(cc),
+						slot);
+			} else {
+				fprintf(sim_log, "opp apply %d (%s)\n",
+						slot,
+						get_card_name(cc));
+			}
+		}
 	}
 
 	if (is_pro) {
@@ -567,7 +586,7 @@ apply_card(enum card_code cc,
 	}
 
 	if (!r) {
-		fprintf(stderr, "NativeError\n");
+		fprintf(sim_log, "NativeError\n");
 		slt->f = new Card(CARD_I);
 	} else {
 		slt->f = *r;
@@ -603,6 +622,10 @@ apply_card(enum card_code cc,
     {
         pthread_exit(NULL);
     }
+#else
+	if (is_pro) {
+		turn_count++;
+	}
 #endif
 
 	return events;
@@ -616,13 +639,13 @@ static void
 dump_card(Card const *c)
 {
 	if (c->is_number) {
-		fprintf(stderr, "%d ", c->u.int_val);
+		fprintf(sim_log, "%d ", c->u.int_val);
 	} else {
-		fprintf(stderr, "(%s ", get_card_name(c->card));
+		fprintf(sim_log, "(%s ", get_card_name(c->card));
 		for (int i=0; i<c->u.func.cur_num_applied; i++) {
 			dump_card(c->u.func.args[i]);
 		}
-		fprintf(stderr, ")");
+		fprintf(sim_log, ")");
 	}
 }
 
@@ -638,13 +661,14 @@ is_disp_omit(Slot &slt)
 void
 dump_slots()
 {
+	fprintf(sim_log, "turn=%d\n", turn_count);
 	for (int i=0; i<256; i++) {
 		if (is_disp_omit(pro[i])) {
 			/* omitted */
 		} else {
-			fprintf(stderr, "pro%d: v=%d, f=", i, pro[i].v);
+			fprintf(sim_log, "pro%d: v=%d, f=", i, pro[i].v);
 			dump_card(pro[i].f);
-			fprintf(stderr, "\n");
+			fprintf(sim_log, "\n");
 		}
 	}
 
@@ -652,11 +676,12 @@ dump_slots()
 		if (is_disp_omit(opp[i])) {
 			/* omitted */
 		} else {
-			fprintf(stderr, "opp%d: v=%d, f=", i, opp[i].v);
+			fprintf(sim_log, "opp%d: v=%d, f=", i, opp[i].v);
 			dump_card(opp[i].f);
-			fprintf(stderr, "\n");
+			fprintf(sim_log, "\n");
 		}
 	}
+	fflush(sim_log);
 }
 
 }

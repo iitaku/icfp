@@ -912,8 +912,8 @@ dump_expr(expr *e)
         fprintf(stderr, "%d ", e->u.int_val);
         break;
 
-    case expr::EMIT_INC_COUNTER:
-        fprintf(stderr, "<emit_inc %d> ", e->u.int_val);
+    case expr::GENERATE_IMM:
+        fprintf(stderr, "<generate_imm %d> ", e->u.int_val);
         break;
 
     case expr::REF_PREV_VAL:

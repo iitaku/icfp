@@ -17,7 +17,7 @@ struct expr {
         INTEGER,
 
         /* virtual nodes */
-        EMIT_INC_COUNTER,
+        GENERATE_IMM,
         DIRECT_INT,
         REF_STATIC_VAR,
         GET_SLOT,
@@ -70,9 +70,9 @@ struct expr {
         return new expr(ret);
     }
 
-    static struct expr *emit_inc_counter(int val) {
+    static struct expr *generate_imm(int val) {
         struct expr ret;
-        ret.code = EMIT_INC_COUNTER;
+        ret.code = GENERATE_IMM;
         ret.u.int_val = val;
         return new expr(ret);
     }

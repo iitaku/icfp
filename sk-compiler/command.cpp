@@ -224,6 +224,8 @@ write_line(command const &com) {
     // usleep(100000);
 #endif
 
+    dump_slots();
+
     return ret;
 }
 
