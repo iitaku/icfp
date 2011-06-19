@@ -156,10 +156,11 @@ zombie_help()
 		bool execute_revise = check_revive_using_vslot(ch, vm);
 		if(execute_revise) {
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n2, false), ch);
-			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n8, false), ch);
-			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n4, false), ch);
-			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n12, false), ch);
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n3, false), ch);
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n4, false), ch);
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n8, false), ch);
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n12, false), ch);
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n15, false), ch);
 		} else {
 			break;
 		}
@@ -171,9 +172,7 @@ zombie_help()
 	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
 	int n5i = 0;
 	
-	while (1) {
-		fprintf(stderr, "checkpoint2\n"); fflush(stderr);
-		
+	while (1) {		
 		if(opp[n5i * 2].v == 10000) {
 			el = eval_and_run_at("(*n2)(*n5)", vm, CompileParam(RIGHT, imm, n129, false), ch);
 		} else {
@@ -183,8 +182,8 @@ zombie_help()
 		n5i++;
 		if(n5i > 127) {
 			n5i = 0;
-			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n5, false), ch);
-			el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
+			el = eval_and_run_at("put", vm, CompileParam(LEFT, imm, n5, true), ch);
+			el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, true), ch);
 		} else {
 			el = eval_and_run_at("succ", vm, CompileParam(LEFT, imm, n5, true), ch);
 		}
