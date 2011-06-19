@@ -62,6 +62,8 @@ main(int argc, char **argv)
     demo_robust_zombie();
 #elif defined ZOMBIE_HELP
     zombie_help();
+#elif defined NAKAMURA
+    nakamura::zombie_attack0();
 #else
     //zombie_help();
     //demo_left();
