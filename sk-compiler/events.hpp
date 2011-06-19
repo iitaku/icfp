@@ -7,6 +7,7 @@ namespace copy_kawaii {
 
 struct Event {
     enum event_code {
+        REVIVE_ZERO_FAILED,
         PROP_DEAD,
         TYPE_ERROR,
         OPP_PUT_ZOMBIE
@@ -22,6 +23,12 @@ struct Event {
         float xyzzy2;
     } u;
 
+    Event(event_code e)
+        :code(e)
+    {}
+
+    Event() {}
+
     static Event dead(enum event_code code, int slot) {
         Event e;
         //e.code = PROP_DEAD;
@@ -29,6 +36,7 @@ struct Event {
         e.u.slot = slot;
         return e;
     }
+
     static Event type_error(int slot) {
         Event e;
         e.code = TYPE_ERROR;

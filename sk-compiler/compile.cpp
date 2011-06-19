@@ -7,6 +7,8 @@
 
 namespace copy_kawaii {
 
+MemPool expr_pool;
+
 struct state {
     int imm_slot_val;
 };
@@ -68,7 +70,7 @@ generate_imm(state &st,
 {    
     int n = src->u.int_val;
 
-    if (st.imm_slot_val == n) {
+    if (0 && st.imm_slot_val == n) {
         /* reuse prev val */
     } else {
         dst.push_back(command(LEFT, cp.imm_slot, CARD_PUT));

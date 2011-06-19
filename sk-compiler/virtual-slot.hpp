@@ -32,7 +32,7 @@ struct VSlot {
     {}
 };
 
-#define MAX_NUM_VSLOT 128
+#define MAX_NUM_VSLOT 256
 
 typedef std::map<std::string, int> name_to_slot_t;
 

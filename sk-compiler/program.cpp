@@ -299,18 +299,19 @@ expect(lexer &l,
 
 static struct expr *
 parse_expr(struct lexer *l,
-           bool toplev)
+           bool toplev,
+           MemPool &p)
 {
     expr *prev = NULL, *cur = NULL;
     while (1) {
         switch (l->lastval.code) {
         case lexval::LPAR:
             lex(l);
-            cur = parse_expr(l, false);
+            cur = parse_expr(l, false, p);
             if (prev == NULL) {
                 prev = cur;
             } else {
-                prev = expr::apply(prev, cur);
+                prev = expr::apply(prev, cur, p);
             }
             break;
 
@@ -327,22 +328,22 @@ parse_expr(struct lexer *l,
             return prev;
 
         case lexval::CARD:
-            cur = expr::card(l->lastval.u.card);
+            cur = expr::card(l->lastval.u.card, p);
             lex(l);
             if (prev == NULL) {
                 prev = cur;
             } else {
-                prev = expr::apply(prev, cur);
+                prev = expr::apply(prev, cur, p);
             }
             break;
 
         case lexval::DIGIT:
-            cur = expr::integer(l->lastval.u.digit_val);
+            cur = expr::integer(l->lastval.u.digit_val, p);
             lex(l);
             if (prev == NULL) {
                 prev = cur;
             } else {
-                prev = expr::apply(prev, cur);
+                prev = expr::apply(prev, cur, p);
             }
             break;
 
@@ -352,22 +353,22 @@ parse_expr(struct lexer *l,
                 fprintf(stderr, "error near '$'\n");
                 assert(0);
             }
-            cur = expr::ref_static_var(l->lastval.u.sym);
+            cur = expr::ref_static_var(l->lastval.u.sym, p);
             lex(l);
             if (prev == NULL) {
                 prev = cur;
             } else {
-                prev = expr::apply(prev, cur);
+                prev = expr::apply(prev, cur, p);
             }
             break;
 
         case lexval::CLEAR:
-            cur = expr::clear();
+            cur = expr::clear(p);
             lex(l);
             if (prev == NULL) {
                 prev = cur;
             } else {
-                prev = expr::apply(prev, cur);
+                prev = expr::apply(prev, cur, p);
             }
             break;
 
@@ -377,12 +378,12 @@ parse_expr(struct lexer *l,
                 fprintf(stderr, "error near '@'\n");
                 assert(0);
             }
-            cur = expr::get_vslot(l->lastval.u.sym);
+            cur = expr::get_vslot(l->lastval.u.sym, p);
             lex(l);
             if (prev == NULL) {
                 prev = cur;
             } else {
-                prev = expr::apply(prev, cur);
+                prev = expr::apply(prev, cur, p);
             }
             break;
 
@@ -392,12 +393,12 @@ parse_expr(struct lexer *l,
                 fprintf(stderr, "error near '@'\n");
                 assert(0);
             }
-            cur = expr::get_slot(l->lastval.u.digit_val);
+            cur = expr::get_slot(l->lastval.u.digit_val, p);
             lex(l);
             if (prev == NULL) {
                 prev = cur;
             } else {
-                prev = expr::apply(prev, cur);
+                prev = expr::apply(prev, cur, p);
             }
             break;
 
@@ -424,28 +425,29 @@ parse_expr(struct lexer *l,
 
 
 static struct expr *
-parse_expr(lexer &l)
+parse_expr(lexer &l, MemPool &p)
 {
-    return parse_expr(&l, true);
+    return parse_expr(&l, true, p);
 }
 
 expr *
 parse_expr(const char *src,
-           CompileParam const &cp)
+           CompileParam const &cp,
+           MemPool &p)
 {
     struct lexer l(src, strlen(src));
     lex(&l);
 
 
-    expr *ret = parse_expr(l);
+    expr *ret = parse_expr(l, p);
 
     if (cp.ref_prev_val) {
         if (cp.ref_prev_lr == LEFT) {
             return expr::apply(ret,
-                               expr::ref_prev_val());
+                               expr::ref_prev_val(p), p);
         } else {
-            return expr::apply(expr::ref_prev_val(),
-                               ret);
+            return expr::apply(expr::ref_prev_val(p),
+                               ret, p);
         }
     } else {
         return ret;
@@ -572,6 +574,7 @@ parse_static_expr(lexer &l)
 }
 
 
+#if 0
 program
 parse(const char *source,
       int source_len)
@@ -698,7 +701,6 @@ parse(const char *source,
 quit:
     return ret;
 }
-#if 0
 static int
 lookup_label(program &prog,
              const char *src)

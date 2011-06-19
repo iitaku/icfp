@@ -13,6 +13,7 @@ namespace copy_kawaii {
 typedef std::map<std::string, bool> critical_slots_t;
 
 struct CriticalHandler {
+    bool auto_recovery_zero;
     bool type_error_critical;
 
     critical_slots_t critical_slots;
@@ -27,7 +28,8 @@ struct CriticalHandler {
     virtual bool recovery(event_list_t &ciritcal_event) { return false; }
 
     CriticalHandler()
-        :type_error_critical(true)
+        :auto_recovery_zero(false),
+         type_error_critical(true)
     {
     }
 

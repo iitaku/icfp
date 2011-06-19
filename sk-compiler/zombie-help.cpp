@@ -172,7 +172,7 @@ zombie_help()
 	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
 	int n5i = 0;
 	
-	while (1) {		
+	while (1) {
 		if(opp[n5i * 2].v == 10000) {
 			el = eval_and_run_at("(*n2)(*n5)", vm, CompileParam(RIGHT, imm, n129, false), ch);
 		} else {

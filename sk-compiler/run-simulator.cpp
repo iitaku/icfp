@@ -47,7 +47,7 @@ void update_state(commands &coms)
         }
         dump_slots();
 
-        apply_card(CARD_I, RIGHT, 0, false);
+        apply_card(coms[i].card, coms[i].lr, coms[i].slot, false);
     }
     coms.clear();
 }
@@ -63,6 +63,11 @@ void sim(void)
         int step = 0;
         commands coms;
 
+        eval_at(coms, "@8 @8", vm, CompileParam(RIGHT, 0, 1, false));
+        eval_at(coms, "@8 @8", vm, CompileParam(RIGHT, 0, 1, false));
+        eval_at(coms, "@8 @8", vm, CompileParam(RIGHT, 0, 1, false));
+        eval_at(coms, "@8 @8", vm, CompileParam(RIGHT, 0, 1, false));
+        eval_at(coms, "@8 @8", vm, CompileParam(RIGHT, 0, 1, false));
         eval_at(coms, "@8 @8", vm, CompileParam(RIGHT, 0, 1, false));
 
         update_state(coms);

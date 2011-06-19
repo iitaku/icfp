@@ -15,8 +15,9 @@ eval_at(commands &coms,
         expr *expr, var_map_t &vm,
         CompileParam const &cp)
 {
+    MemPool p;
     bool dump = false;
-    struct expr *iexpanded = expand_integer(vm, expr, cp);
+    struct expr *iexpanded = expand_integer(vm, expr, cp, p);
 
     if (dump) {
         fprintf(stderr, "expand integer = ");
@@ -24,7 +25,7 @@ eval_at(commands &coms,
         fprintf(stderr, "\n");
     }
     bool change = false;
-    struct expr *sk = expand_sk(iexpanded, NULL, &change, cp);
+    struct expr *sk = expand_sk(iexpanded, NULL, &change, cp, p);
     if (dump) {
         fprintf(stderr, "expand sk = ");
         dump_expr(sk);
@@ -43,9 +44,10 @@ eval_at(commands &coms,
         const char *prog, var_map_t &vm,
         CompileParam const &cp)
 {
+    MemPool p;
     //fprintf(stderr, "eval : %s\n", prog);
 
-    expr *e = parse_expr(prog, cp);
+    expr *e = parse_expr(prog, cp, p);
     eval_at(coms, e, vm, cp);
 
     for (int i=0; i<coms.size(); ++i)
@@ -66,10 +68,39 @@ gather_critical_event(event_list_t &dst,
         switch (ev.code) {
         case Event::PROP_DEAD: {
             if(ev.u.slot < MAX_NUM_VSLOT) {
+                if (ev.u.slot == 0 &&
+                    cl.auto_recovery_zero)
+                {
+                    VSlot prog_slot = VSA->alloc_vslot("revive0");
+                    var_map_t vm;
+                    CriticalHandler ch;
+
+                    //VSA->dump();
+
+                    if (! is_id(pro[prog_slot.slot].f)) {
+                        eval_and_run_at("clear",
+                                        vm,
+                                        CompileParam(RIGHT, prog_slot, prog_slot, false), ch);
+                    }
+
+                    commands coms;
+                    coms.push_back(command(RIGHT, prog_slot.slot, CARD_ZERO));
+                    coms.push_back(command(LEFT, prog_slot.slot, CARD_REVIVE));
+
+                    for (int i=0; i<2; i++) {
+                        write_line(coms[i]);
+                        get_command_line(from_opponent);
+                    }
+                    VSA->free_vslot(prog_slot);
+
+                    //dst.push_back(Event(Event::REVIVE_ZERO_FAILED));
+                    continue;
+                }
+
 #if defined(DUEL_IN_LOCAL)
-            std::string slot_name = vsa->slot_to_name[ev.u.slot];
+                std::string slot_name = vsa->slot_to_name[ev.u.slot];
 #else
-            std::string slot_name = vsa.slot_to_name[ev.u.slot];
+                std::string slot_name = vsa.slot_to_name[ev.u.slot];
 #endif
 
                 critical_slots_t::const_iterator i = cl.critical_slots.begin(),
@@ -116,6 +147,7 @@ eval_and_run_at(expr *e,
         gather_critical_event(critical_event, cl.events, ch);
 
         if (critical_event.size() != 0) {
+
             bool r = ch.recovery(critical_event);
             if (!r) {
                 return critical_event;
@@ -154,6 +186,8 @@ eval_and_run_at(const char *prog,
             }
         }
     }
+
+    
 
     return event_list_t();
 }

@@ -41,17 +41,18 @@ struct CompileParam {
 };
 
 expr *expand_integer(var_map_t &prog, const expr *src,
-                     const CompileParam &cp);
+                     const CompileParam &cp,
+                     MemPool &p);
 
 expr *expand_sk(const expr *src,
                 expr *head,
                 bool *change,
-                CompileParam const &cp);
+                CompileParam const &cp,
+                MemPool &p);
 
 void compile(commands &commands,
              const expr *src,
              CompileParam const &cp);
-
 
 }
 

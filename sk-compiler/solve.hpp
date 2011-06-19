@@ -23,6 +23,9 @@ static Stats stats;
  */
 class Card {
 public:
+	Card *chain;
+
+	bool mark;
 	bool is_number;
 	// card type : 15 types
 	enum card_code card;
@@ -83,9 +86,7 @@ struct Slot {
 	 * @brief constructor
 	 * @param[in] type_    proponent (0) or opponent (1)
 	 */
-	Slot()
-		: v(10000), f(new Card(CARD_I))
-	{}
+	Slot();
 
 	~Slot()
 	{}
@@ -98,7 +99,7 @@ struct Slot {
 };
 
 event_list_t apply_card(enum card_code card, enum lr_code lr, int slot, bool is_pro);
-
+void gc_card();
 
 // proponent and opponents' slots
 extern std::vector<Slot> pro;

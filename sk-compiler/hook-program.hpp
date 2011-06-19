@@ -52,7 +52,8 @@ struct HookCollection
             this->hooked = true;
             for (int i=0; i<programs.size(); ++i)
             {
-                expr *e = parse_expr(programs[i].prog_, programs[i].cp_);
+                MemPool p;
+                expr *e = parse_expr(programs[i].prog_, programs[i].cp_, p);
 
                 if (programs[i].trigger_(event_list, e, programs[i].vm_))
                 {
@@ -79,7 +80,8 @@ struct HookCollection
             hooked = true;
             for (int i=0; i<programs.size(); ++i)
             {
-                expr *e = parse_expr(programs[i].prog_, programs[i].cp_);
+                MemPool p;
+                expr *e = parse_expr(programs[i].prog_, programs[i].cp_, p);
                 
                 if (programs[i].trigger_(event_list, e, programs[i].vm_))
                 {

@@ -5,13 +5,96 @@
 #include "solve.hpp"
 #include "virtual-slot.hpp"
 
-#define DUMP true
+#define DUMP false
 
 namespace copy_kawaii {
 
 FILE *sim_log;
 
 using namespace std;
+
+static Card *root;
+
+static Card *
+alloc_card(Card const &val)
+{
+	Card *c = new Card(val);
+
+	c->chain = root;
+	c->mark = false;
+	root = c;
+
+	return c;
+}
+
+Slot::Slot()
+  : v(10000)
+{
+	f = alloc_card(Card(CARD_I));
+}
+
+
+static void
+mark(Card *c)
+{
+	if (c->mark) {
+		return;
+	}
+	c->mark = true;
+
+	if (c->is_number) {
+		return;
+	}
+
+	for (int i=0; i<c->u.func.cur_num_applied; i++) {
+		mark(c->u.func.args[i]);
+	}
+}
+
+static Card*
+sweep(Card *c, Card *prev)
+{
+	int num_alloc = 0;
+	int num_sweep = 0;
+head:
+	if (c == NULL) {
+		/*
+		fprintf(stderr, "alloc=%d, free=%d\n",
+				num_alloc,
+				num_sweep);
+		*/
+		return prev;
+	}
+
+	if (c->mark) {
+		c->mark = false;
+		Card *tmp = c->chain;
+		c->chain = prev;
+		prev = c;
+		c = tmp;
+
+		num_alloc++;
+		goto head;
+	} else {
+		Card *f = c;
+		c = c->chain;
+		delete f;
+		num_sweep++;
+		goto head;
+	}
+}
+
+void
+gc_card()
+{
+	for (int i=0; i<256; i++) {
+		mark(pro[i].f);
+		mark(opp[i].f);
+	}
+
+	root = sweep(root, NULL);
+}
+
 
 #if defined(DUEL_IN_LOCAL)
 #define TURN_MAX (100000)
@@ -47,10 +130,10 @@ in_range(int a, int b, int c){
 Card *card_deep_copy(const Card *c)
 {
 	if (c->is_number) {
-		return new Card(c->u.int_val);
+		return alloc_card(Card(c->u.int_val));
 	}
 
-	Card *ret = new Card(c->card);
+	Card *ret = alloc_card(Card(c->card));
 	ret->card = c->card;
 	ret->is_number = false;
 	ret->u.func.cur_num_applied = c->u.func.cur_num_applied;
@@ -84,8 +167,11 @@ damage(event_list_t &events,
 	*v -= value;
 	if (*v <= 0) {
 		if (pro_opp == PRO) {
+			//fprintf(sim_log, "dead %d\n", idx);
 			events.push_back(Event::dead(Event::PROP_DEAD, idx));
 			VSA->states[idx] = VirtualSlotAllocator::DEAD;
+		} else {
+			//fprintf(sim_log, "kill %d\n", idx);
 		}
 		*v = 0;
 	}
@@ -130,6 +216,7 @@ apply(event_list_t &events,
 		return nothing();
 	}
 
+	dump_slots();
 	int full_num_arg = num_arg[func->card];
 	int remain = full_num_arg - func->u.func.cur_num_applied;
 
@@ -220,7 +307,7 @@ apply(event_list_t &events,
 				}
 			}
 		}
-			return new Card(CARD_I);
+			return alloc_card(Card(CARD_I));
 
 		case CARD_HELP: {
 			////////////////////////////////////////////////////////////////////
@@ -268,7 +355,7 @@ apply(event_list_t &events,
 				}
 			}
 		}
-			return new Card(CARD_I);
+			return alloc_card(Card(CARD_I));
 
 		case CARD_K: {
 			////////////////////////////////////////////////////////////////////
@@ -281,7 +368,7 @@ apply(event_list_t &events,
 		}
 
 		case CARD_PUT:
-			return new Card(CARD_I);
+			return alloc_card(Card(CARD_I));
 
 		case CARD_GET: {
 			////////////////////////////////////////////////////////////////////
@@ -322,7 +409,7 @@ apply(event_list_t &events,
 				return nothing();
 			}
 
-			m = new Card(n->u.int_val + 1);
+			m = alloc_card(Card(n->u.int_val + 1));
 			return m;
 		}
 
@@ -337,7 +424,7 @@ apply(event_list_t &events,
 				return nothing();
 			}
 
-			m = new Card(n->u.int_val * 2);
+			m = alloc_card(Card(n->u.int_val * 2));
 			return m;
 		}
 
@@ -372,7 +459,7 @@ apply(event_list_t &events,
 					damage(events, idx, OPP, 1);
 				}
 			}
-			return new Card(CARD_I);
+			return alloc_card(Card(CARD_I));
 		}
 
 		case CARD_DEC: {
@@ -407,7 +494,7 @@ apply(event_list_t &events,
 				}
 			}
 		}
-			return new Card(CARD_I);
+			return alloc_card(Card(CARD_I));
 
 		case CARD_COPY:
 			////////////////////////////////////////////////////////////////////
@@ -454,7 +541,7 @@ apply(event_list_t &events,
 					opp[i->u.int_val].v = 1;
 				}
 			}
-			return new Card(CARD_I);
+			return alloc_card(Card(CARD_I));
 
 		case CARD_ZOMBIE:
 			////////////////////////////////////////////////////////////////////
@@ -484,7 +571,7 @@ apply(event_list_t &events,
 					pro[255-i->u.int_val].f = card_deep_copy(x);
 				}
 			}
-			return new Card(CARD_I);
+			return alloc_card(Card(CARD_I));
 
 		case CARD_I:
 			////////////////////////////////////////////////////////////////////
@@ -522,21 +609,25 @@ apply_card(enum card_code cc,
 	Slot *slt;
 	bool dump = DUMP;
 
+	if (cc == CARD_UNKNOWN) {
+		cc = CARD_I;
+	}
+
 	/* zombie apply */
 	if (is_pro) {
 		for (int i=0; i<256; i++) {
 			if (pro[i].v < 0) {
-				apply(events, pro[i].f, new Card(CARD_I), i, true, true);
+				apply(events, pro[i].f, alloc_card(Card(CARD_I)), i, true, true);
 				pro[i].v = 0;
-				opp[i].f = new Card(CARD_I);
+				opp[i].f = alloc_card(Card(CARD_I));
 			}
 		}
 	} else {
 		for (int i=0; i<256; i++) {
 			if (opp[i].v < 0) {
-				apply(events, opp[i].f, new Card(CARD_I), i, false, true);
+				apply(events, opp[i].f, alloc_card(Card(CARD_I)), i, false, true);
 				opp[i].v = 0;
-				opp[i].f = new Card(CARD_I);
+				opp[i].f = alloc_card(Card(CARD_I));
 			}
 		}
 	}
@@ -580,9 +671,9 @@ apply_card(enum card_code cc,
 	Card *c;
 
 	if (cc == CARD_ZERO) {
-		c = new Card(0);
+		c = alloc_card(Card(0));
 	} else {
-		c = new Card(cc);
+		c = alloc_card(Card(cc));
 	}
 
 	optional<Card*> r;
@@ -595,7 +686,7 @@ apply_card(enum card_code cc,
 
 	if (!r) {
 		fprintf(sim_log, "NativeError\n");
-		slt->f = new Card(CARD_I);
+		slt->f = alloc_card(Card(CARD_I));
 	} else {
 		slt->f = *r;
 	}
@@ -640,6 +731,8 @@ apply_card(enum card_code cc,
 		turn_count++;
 	}
 #endif
+
+	gc_card();
 
 	return events;
 }

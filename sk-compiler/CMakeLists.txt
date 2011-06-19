@@ -19,9 +19,9 @@ set(SOURCE ltg-opt.cpp
            zombie-help.cpp
            demos.cpp
            nakamura.cpp
-		   lambda-buster.cpp
-           virtual-slot.cpp)
-           #mempool.cpp)
+	   lambda-buster.cpp
+           virtual-slot.cpp
+           mempool.cpp)
 
 file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")
@@ -35,7 +35,9 @@ add_executable(
   program.cpp
   compile.cpp
   eval.cpp
-  tool.cpp)
+  tool.cpp
+  mempool.cpp
+  )
 
 # DUEL_WITH_IDIOT_PROGRAM : 何もしない相手と対戦する
 #set_target_properties(run-simulator PROPERTIES COMPILE_FLAGS "-D DUEL_WITH_IDIOT_PROGRAM")
@@ -49,6 +51,7 @@ add_executable(
   compile.cpp
   eval.cpp
   tool.cpp
+  mempool.cpp
   )
 
 target_link_libraries(duel-simulator pthread)
