@@ -141,7 +141,7 @@ zombie_help()
 			vm, CompileParam(RIGHT, imm, n12, false), ch);
 		el = eval_and_run_at("S (zombie) (*n12)", vm, CompileParam(RIGHT, imm, n4, false), ch);
 		
-		el = eval_and_run_at("S I I (*n8)", vm, CompileParam(RIGHT, imm, n11, false), ch);
+		el = eval_and_run_at("(*n8)(*n8)", vm, CompileParam(RIGHT, imm, n11, false), ch);
 		el = eval_and_run_at("(S(K(*n8)))(*n11)(attack)(5632)", vm, CompileParam(RIGHT, imm, n13, false), ch);
 		
 		el = eval_and_run_at("(S (K(succ)) (dbl))", vm, CompileParam(RIGHT, imm, n15, false), ch);
