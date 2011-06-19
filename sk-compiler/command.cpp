@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #define ENABLE_SIM 1
+//#define ENABLE_SIM 0
 
 namespace copy_kawaii {
 FILE *from_opponent;

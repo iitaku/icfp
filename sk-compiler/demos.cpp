@@ -1,3 +1,4 @@
+#include <iostream>
 #include "proponents.hpp"
 #include "eval.hpp"
 #include "solve.hpp"
@@ -185,5 +186,25 @@ test_attack0()
     }
 }
 
+/* ひたすら回復 */
+void
+test_selfcare()
+{
+    CriticalHandler ch;
+    var_map_t vm;
+    int imm_slot = 0;
+
+    eval_and_run_at("8192", vm, CompileParam(RIGHT, imm_slot, 8, false), ch);
+
+    while (1) {
+        for (int i = 0; i < 255; i++) {
+            vm["x"] = i;
+            vm["y"] = 255;
+
+            eval_and_run_at("help ($y)($x)(@8)", vm, CompileParam(RIGHT, imm_slot, 129, false), ch);
+            eval_and_run_at("help ($x)($y)(@8)", vm, CompileParam(RIGHT, imm_slot, 129, false), ch);
+        }
+    }
+}
 
 }
