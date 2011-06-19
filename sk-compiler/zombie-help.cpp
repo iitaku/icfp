@@ -194,7 +194,7 @@ zombie_help()
 				
 				el = eval_and_run_at("dec ($e)", vm, CompileParam(RIGHT, imm, dec_op, false), ch);
 				
-				vsa.free_vslot(dec_op);
+				VSLOT_FREE(dec_op);
 			}
 		}
 		bool execute_revise = check_revive_using_vslot(ch, vm);

@@ -4,6 +4,18 @@
 #include <string>
 #include <map>
 
+#if defined(DUEL_IN_LOCAL)
+#define VSLOT_ALLOC(s) vsa->alloc_vslot(s)
+#define VSLOT_ALLOC2(s,o) vsa->alloc_vslot(s,o)
+#define VSLOT_DUMP() vsa->dump() 
+#define VSLOT_FREE(s) vsa->free_vslot(s)
+#else
+#define VSLOT_ALLOC(s) vsa.alloc_vslot(s)
+#define VSLOT_ALLOC2(s,o) vsa.alloc_vslot(s,o)
+#define VSLOT_DUMP() vsa.dump() 
+#define VSLOT_FREE(s) vsa.free_vslot(s)
+#endif
+
 namespace copy_kawaii {
 
 struct VSlot {
@@ -55,7 +67,13 @@ struct VirtualSlotAllocator {
     void dump();
 };
 
+#if defined(DUEL_IN_LOCAL)
+extern VirtualSlotAllocator vsa_[2];
+extern __thread VirtualSlotAllocator* vsa;
+#else
 extern VirtualSlotAllocator vsa;
+#endif
+
 
 }
 

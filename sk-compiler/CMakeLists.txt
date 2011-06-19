@@ -1,7 +1,6 @@
 project(sk-compiler)
 cmake_minimum_required(VERSION 2.8)
 
-
 #add_definitions(-Wall
 #  -Werror
 #  -Wno-sign-compare
@@ -35,6 +34,22 @@ add_executable(
   compile.cpp
   eval.cpp
   tool.cpp)
+
+# DUEL_WITH_IDIOT_PROGRAM : 何もしない相手と対戦する
+#set_target_properties(run-simulator PROPERTIES COMPILE_FLAGS "-D DUEL_WITH_IDIOT_PROGRAM")
+
+add_executable(
+  duel-simulator duel-simulator.cpp solve.cpp command.cpp
+  expand-integer.cpp
+  expand-sk.cpp
+  virtual-slot.cpp
+  program.cpp
+  compile.cpp
+  eval.cpp
+  tool.cpp)
+
+target_link_libraries(duel-simulator pthread)
+set_target_properties(duel-simulator PROPERTIES COMPILE_FLAGS "-D DUEL_IN_LOCAL")
 
 set(EXEC_NAME ltg-opt)
 add_executable(${EXEC_NAME} ${SOURCE})
@@ -73,3 +88,4 @@ add_custom_target(package
                   COMMAND tar -cf ${PROJECT_BINARY_DIR}/${EXEC_NAME}.d.tar ${PKG_DIR}
                   COMMAND gzip -f ${PROJECT_BINARY_DIR}/${EXEC_NAME}.d.tar
                   COMMAND rm -rf ${PKG_DIR})
+

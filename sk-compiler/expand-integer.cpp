@@ -29,7 +29,13 @@ expand_integer(int n, bool top_level)
 static int
 get_vslot(const char *vslot_name)
 {
+
+#if defined(DUEL_IN_LOCAL)
+    return vsa->name_to_slot[vslot_name];
+#else
     return vsa.name_to_slot[vslot_name];
+#endif
+
 }
 
 static expr *
