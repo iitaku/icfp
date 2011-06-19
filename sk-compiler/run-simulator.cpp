@@ -36,7 +36,7 @@ void update_state(commands coms)
 {
     for (int i=0; i<coms.size(); i++) {
         apply_card(coms[i].card, coms[i].lr,
-                coms[i].slot, true);
+				   coms[i].slot, true);
         dump_slots();
     }
 }

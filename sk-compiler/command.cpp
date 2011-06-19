@@ -9,6 +9,7 @@
 
 #define ENABLE_SIM 1
 //#define ENABLE_SIM 0
+//#define DUEL_WITH_IDIOT_PROGRAM
 
 #if defined(DUEL_IN_LOCAL)
 #include <pthread.h>
