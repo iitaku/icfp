@@ -3,6 +3,7 @@
 #include "eval.hpp"
 #include "solve.hpp"
 #include "virtual-slot.hpp"
+#include <sstream>
 
 #define ENABLE_SIM 1
 
@@ -154,6 +155,9 @@ zombie_help()
 	VSlot n129 = vsa.alloc_vslot("n129");
 	
 	while (1) {
+		check_and_revive_using_vslot(ch, vm, "imm");
+		check_and_revive_using_vslot(ch, vm, "n8");
+		check_and_revive_using_vslot(ch, vm, "n3");
 		el = eval_and_run_at("S(K((S((S(K((S(K(S)))K)))S))(K(K))))", vm, CompileParam(RIGHT, imm, n8, false), ch);
 		el = eval_and_run_at("S I I (*n8)", vm, CompileParam(RIGHT, imm, n3, false), ch);
 		if(check_and_revive_using_vslot(ch, vm, "imm") 
@@ -167,6 +171,12 @@ zombie_help()
 		
 		bool ok1 = true;
 		while(1) {
+			if(check_and_revive_using_vslot(ch, vm, "n3")) {
+				el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n3, false), ch);
+				ok1 = false;
+				break;
+			}
+			check_and_revive_using_vslot(ch, vm, "imm");
 			el = eval_and_run_at("(S(K(S(K(S(K(S(((*n3)(help))(10000))(succ)))(dbl)))))(K))", 
 				vm, CompileParam(RIGHT, imm, n12, false), ch);
 			if(check_and_revive_using_vslot(ch, vm, "imm") 
@@ -177,6 +187,11 @@ zombie_help()
 				break;
 			}
 			
+			if(check_and_revive_using_vslot(ch, vm, "n3")) {
+				el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n12, false), ch);
+				continue;
+			}
+			check_and_revive_using_vslot(ch, vm, "n4");
 			el = eval_and_run_at("S (zombie) (*n12)", vm, CompileParam(RIGHT, imm, n4, false), ch);
 			if(check_and_revive_using_vslot(ch, vm, "imm") 
 				| check_and_revive_using_vslot(ch, vm, "n12") 
@@ -190,6 +205,19 @@ zombie_help()
 		}
 		if(!ok1) continue;
 		
+		if(check_and_revive_using_vslot(ch, vm, "n3")
+			| check_and_revive_using_vslot(ch, vm, "n4")
+			| check_and_revive_using_vslot(ch, vm, "n15")) 
+		{
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n3, false), ch);
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n4, false), ch);
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n15, false), ch);
+			continue;
+		}
+		if(check_and_revive_using_vslot(ch, vm, "n2")) {
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n2, false), ch);
+		}
+			
 		el = eval_and_run_at("(attack)", vm, CompileParam(RIGHT, imm, n3, true), ch);
 		el = eval_and_run_at("(5632)", vm, CompileParam(RIGHT, imm, n3, true), ch);
 		el = eval_and_run_at("K", vm, CompileParam(LEFT, imm, n3, true), ch);
@@ -208,8 +236,10 @@ zombie_help()
 		if(check_and_revive_using_vslot(ch, vm, "imm") 
 			|check_and_revive_using_vslot(ch, vm, "n3") 
 			| check_and_revive_using_vslot(ch, vm, "n4")
-			| check_and_revive_using_vslot(ch, vm, "n15")) 
+			| check_and_revive_using_vslot(ch, vm, "n15")
+			| check_and_revive_using_vslot(ch, vm, "n2")) 
 		{
+			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n2, false), ch);
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n3, false), ch);
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n4, false), ch);
 			el = eval_and_run_at("clear", vm, CompileParam(RIGHT, imm, n15, false), ch);
@@ -223,11 +253,25 @@ zombie_help()
 	vsa.free_vslot(n12);
 	vsa.free_vslot(n15);
 	
+	check_and_revive_using_vslot(ch, vm, "n5");
 	el = eval_and_run_at("zero", vm, CompileParam(RIGHT, imm, n5, false), ch);
 	int n5i = 0;
+	check_and_revive_using_vslot(ch, vm, "n1");
 	el = eval_and_run_at("!(*n2)(*n5)", vm, CompileParam(RIGHT, imm, n1, false), ch);
 	
-	while (1) {		
+	while (1) {
+		fprintf(stderr, "main loop\n"); fflush(stderr);
+		if(pro[n5i * 2].v <= 5632 || pro[n5i * 2 + 1].v <= 5632) {
+			for(n5i++; n5i < 128; n5i++) {
+				if(pro[n5i * 2].v > 5632 && pro[n5i * 2 + 1].v > 5632) {
+					break;
+				}
+			}
+			std::stringstream ss;
+			ss << "(" << n5i << ")";
+			el = eval_and_run_at(ss.str().c_str(), vm, CompileParam(RIGHT, imm, n5, false), ch);
+		}
+		
 		if(opp[n5i * 2].v >= 10000) {
 			el = eval_and_run_at("(*n1)(0)", vm, CompileParam(RIGHT, imm, n129, false), ch);
 		} else {
