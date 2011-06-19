@@ -12,6 +12,7 @@ typedef enum Player { PRO=0, OPP } player_t;
 struct SlotInfo {
 	int slot;
 	int used;
+	int field;
 	int attacked;
 	int damage;
 	int heal;
@@ -86,12 +87,14 @@ struct Stats {
 		}
 	}
 	void proc() {
-#if 0
+#if 1
 		std::sort(pro.slots.begin(), pro.slots.end(), SortUsed());
 		std::sort(opp.slots.begin(), opp.slots.end(), SortUsed());
 #endif
+#if 0
 		std::sort(pro.slots.begin(), pro.slots.end(), SortAttacked());
 		std::sort(opp.slots.begin(), opp.slots.end(), SortAttacked());
+#endif
 	}
 };
 

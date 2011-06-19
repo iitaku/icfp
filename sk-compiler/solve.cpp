@@ -292,8 +292,10 @@ apply(event_list_t &events,
 
 			if (is_pro) {
 				y = pro[i->u.int_val].f;
+				stats.count_used(PRO, i->u.int_val); ///
 			} else {
 				y = opp[i->u.int_val].f;
+				stats.count_used(OPP, i->u.int_val); ///
 			}
 
 			y = card_deep_copy(y);
@@ -526,10 +528,12 @@ apply_card(enum card_code cc,
 		}
 	}
 
+#if 0
 	if (slot >= 0 && slot < N_SLOTS) {
 		if (is_pro) stats.count_used(PRO, slot);
 		else stats.count_used(OPP, slot);
 	}
+#endif
 
 	if (lr== LEFT) {
 		fprintf(stderr, "apply %s (%d)\n",
@@ -575,13 +579,21 @@ apply_card(enum card_code cc,
 	///// debug
 	if (!stats.pro.slots.empty()) {
 		cerr << "*** pro slot size:            " << stats.pro.slots.size() << endl;
+		cerr << "*** pro used (slot, num):     "
+			 << stats.pro.slots[0].slot << ", " << stats.pro.slots[0].used << endl;
+		/*
 		cerr << "*** pro attacked (slot, num): "
 			 << stats.pro.slots[0].slot << ", " << stats.pro.slots[0].attacked << endl;
+		*/
 	}
 	if (!stats.opp.slots.empty()) {
 		cerr << "*** opp slot size:            " << stats.opp.slots.size() << endl;
+		cerr << "*** opp used (slot, num):     "
+			 << stats.opp.slots[0].slot << ", " << stats.opp.slots[0].used << endl;
+		/*
 		cerr << "*** opp attacked (slot, num): "
 			 << stats.opp.slots[0].slot << ", " << stats.opp.slots[0].attacked << endl;
+		*/
 	}
 #endif
 
