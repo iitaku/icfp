@@ -8,6 +8,11 @@ namespace copy_kawaii {
 
 using namespace std;
 
+#if defined(DUEL_IN_LOCAL)
+#define TURN_MAX (100000)
+__thread int turn_count = 0;
+#endif
+
 static const int num_arg[] = {
     1,                          // I
     0,                          // ZERO
@@ -563,6 +568,14 @@ apply_card(enum card_code cc,
 		cerr << "*** opp attacked (slot, num): "
 			 << stats.opp.slots[0].slot << ", " << stats.opp.slots[0].attacked << endl;
 	}
+#endif
+
+#if defined(DUEL_IN_LOCAL)
+    turn_count++;
+    if (TURN_MAX <= turn_count)
+    {
+        pthread_exit(NULL);
+    }
 #endif
 
 	return events;
