@@ -7,6 +7,11 @@
 
 namespace copy_kawaii { 
 
+//enum HookReturnCode
+//{
+//    
+//}
+
 /* 
  * hookの発動条件記述関数 
  */
@@ -15,27 +20,27 @@ typedef int (*TriggerFunc_t)(var_map_t& vm);
 struct Hook
 {
     const char* prog_;
-    var_map_t vm_;
+    var_map_t* vm_;
     CompileParam cp_;
-    CriticalHandler *ch_;
+    CriticalHandler* ch_;
     commands* coms_;
     TriggerFunc_t trigger_;
 
     Hook() {}
     
     Hook(const char* prog,
-         var_map_t vm,
+         var_map_t* vm,
          CompileParam cp,
-         CriticalHandler *ch,
+         CriticalHandler* ch,
          TriggerFunc_t trigger)
         : prog_(prog), vm_(vm), cp_(cp), ch_(ch), coms_(NULL), trigger_(trigger)
     {}
 
     Hook(const char* prog,
-         var_map_t vm,
+         var_map_t* vm,
          CompileParam cp,
-         CriticalHandler *ch,
-         commands *coms,
+         CriticalHandler* ch,
+         commands* coms,
          TriggerFunc_t trigger)
         : prog_(prog), vm_(vm), cp_(cp), ch_(ch), coms_(coms), trigger_(trigger)
     {}
@@ -57,11 +62,11 @@ struct HookCollection
             hooked = true;
             for (int i=0; i<programs.size(); ++i)
             {
-                if (programs[i].trigger_(programs[i].vm_))
+                if (programs[i].trigger_(*programs[i].vm_))
                 {
                     eval_at(*programs[i].coms_,
                             programs[i].prog_,
-                            programs[i].vm_,
+                            *programs[i].vm_,
                             programs[i].cp_);
                 }
             }
@@ -76,10 +81,10 @@ struct HookCollection
             hooked = true;
             for (int i=0; i<programs.size(); ++i)
             {
-                if (programs[i].trigger_(programs[i].vm_))
+                if (programs[i].trigger_(*programs[i].vm_))
                 {
                     eval_and_run_at(programs[i].prog_,
-                                    programs[i].vm_,
+                                    *programs[i].vm_,
                                     programs[i].cp_,
                                     *programs[i].ch_);
                 }
