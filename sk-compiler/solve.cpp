@@ -58,7 +58,7 @@ apply(event_list_t &events,
 	  bool is_pro,
 	  bool is_zombie_apply)
 {
-	if (func->is_number == 0) {
+	if (func->is_number) {
 		if (is_pro) {
 			events.push_back(Event::type_error(slot));
 		}
@@ -72,6 +72,8 @@ apply(event_list_t &events,
 	assert(remain != 0);
 
 	if (remain == 1) {
+		func->u.func.args[full_num_arg-1] = arg;
+
 		/* all arguments are applied. fold it */
 		Card *x, *h,*y,*f,*g,*n, *m, *i, *j;
 		optional<Card*> oh, oy, oz;
@@ -210,6 +212,10 @@ apply(event_list_t &events,
 
 			i = func->u.func.args[0];
 			if (! i->is_number) {
+				return nothing();
+			}
+
+			if (!in_range(i->u.int_val,0,256)) {
 				return nothing();
 			}
 
@@ -448,13 +454,29 @@ apply_card(enum card_code cc,
 {
 	Slot *slt;
 
+	if (lr== LEFT) {
+		fprintf(stderr, "apply %s (%d)\n",
+				get_card_name(cc),
+				slot);
+	} else {
+		fprintf(stderr, "apply %d (%s)\n",
+				slot,
+				get_card_name(cc));
+	}
+
 	if (is_pro) {
 		slt = &pro[slot];
 	} else {
 		slt = &opp[slot];
 	}
 	event_list_t events;
-	Card *c = new Card(cc);
+	Card *c;
+
+	if (cc == CARD_ZERO) {
+		c = new Card(0);
+	} else {
+		c = new Card(cc);
+	}
 
 	optional<Card*> r;
 
@@ -482,7 +504,7 @@ static void
 dump_card(Card const *c)
 {
 	if (c->is_number) {
-		fprintf(stderr, "%d", c->u.int_val);
+		fprintf(stderr, "%d ", c->u.int_val);
 	} else {
 		fprintf(stderr, "(%s ", get_card_name(c->card));
 		for (int i=0; i<c->u.func.cur_num_applied; i++) {
@@ -493,18 +515,21 @@ dump_card(Card const *c)
 }
 
 static bool
-is_disp_slot(Card *card)
+is_disp_omit(Slot &slt)
 {
-	return (card->is_number) ||
-		(card->card != CARD_I) ||
-		(card->u.int_val != 10000);
+	Card *card = slt.f;
+	return (! card->is_number) &&
+		(card->card == CARD_I) &&
+		(slt.v == 10000);
 }
 
 void
 dump_slots()
 {
 	for (int i=0; i<256; i++) {
-		if (is_disp_slot(pro[i].f)) {
+		if (is_disp_omit(pro[i])) {
+			/* omitted */
+		} else {
 			fprintf(stderr, "p%d: v=%d, f=", i, pro[i].v);
 			dump_card(pro[i].f);
 			fprintf(stderr, "\n");
@@ -512,14 +537,14 @@ dump_slots()
 	}
 
 	for (int i=0; i<256; i++) {
-		if (is_disp_slot(opp[i].f)) {
+		if (is_disp_omit(opp[i])) {
+			/* omitted */
+		} else {
 			fprintf(stderr, "p%d: v=%d, f=", i, opp[i].v);
 			dump_card(opp[i].f);
 			fprintf(stderr, "\n");
 		}
 	}
 }
-
-
 
 }

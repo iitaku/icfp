@@ -73,7 +73,6 @@ void eval_at(commands &coms, expr *expr, var_map_t &vm,
              CompileParam const &cp);
 
 void eval_at(commands &coms,
-             int slot,
              const char *prog,
              var_map_t &vm,
              CompileParam const &cp);

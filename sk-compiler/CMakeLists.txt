@@ -26,6 +26,16 @@ file(GLOB PKG_SOURCE "*.cpp")
 file(GLOB PKG_HEADER "*.hpp")
 file(GLOB PKG_SCRIPT "prog")
 
+add_executable(
+  run-simulator run-simulator.cpp solve.cpp command.cpp
+  expand-integer.cpp
+  expand-sk.cpp
+  virtual-slot.cpp
+  program.cpp
+  compile.cpp
+  eval.cpp
+  tool.cpp)
+
 set(EXEC_NAME ltg-opt)
 add_executable(${EXEC_NAME} ${SOURCE})
 
