@@ -300,10 +300,10 @@ apply(event_list_t &events,
 
 			if (is_pro) {
 				y = pro[i->u.int_val].f;
-				stats.count_used(PRO, i->u.int_val); ///
+				stats.count<USED>(PRO, i->u.int_val); ///
 			} else {
 				y = opp[i->u.int_val].f;
-				stats.count_used(OPP, i->u.int_val); ///
+				stats.count<USED>(OPP, i->u.int_val); ///
 			}
 
 			y = card_deep_copy(y);
@@ -539,8 +539,8 @@ apply_card(enum card_code cc,
 
 #if 0
 	if (slot >= 0 && slot < N_SLOTS) {
-		if (is_pro) stats.count_used(PRO, slot);
-		else stats.count_used(OPP, slot);
+		if (is_pro) stats.count<USED>(PRO, slot);
+		else stats.count<USED>(OPP, slot);
 	}
 #endif
 
@@ -600,6 +600,11 @@ apply_card(enum card_code cc,
 
 #if 0
 	///// debug
+	for (int i = 0; i < 256; i++)
+		if (pro[i].v != 10000) cerr << "pro" << i << " v:" << pro[i].v << endl;
+	for (int i = 0; i < 256; i++)
+		if (opp[i].v != 10000) cerr << "opp" << i << " v:" << opp[i].v << endl;
+
 	if (!stats.pro.slots.empty()) {
 		cerr << "*** pro slot size:            " << stats.pro.slots.size() << endl;
 		cerr << "*** pro used (slot, num):     "

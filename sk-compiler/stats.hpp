@@ -32,16 +32,18 @@ public:
 	}
 };
 
-class SortUsed {
-public:
-	bool operator()(const SlotInfo& a, const SlotInfo& b)
-		{ return a.used > b.used; }
-};
+enum SlotDataType { USED=0, ATTACKED, DAMAGE, HEAL };
 
-class SortAttacked {
+template<SlotDataType T> class SortSlots {
 public:
-	bool operator()(const SlotInfo& a, const SlotInfo& b)
-		{ return a.attacked > b.attacked; }
+	bool operator()(const SlotInfo& a, const SlotInfo& b) {
+		switch (T) {
+		case USED: return a.used > b.used;
+		case ATTACKED: return a.attacked > b.attacked;
+		case DAMAGE: return a.damage > b.damage;
+		case HEAL: return a.heal > b.heal;
+		}
+	}
 };
 
 struct Stats {
@@ -49,52 +51,43 @@ struct Stats {
 		std::vector<SlotInfo> slots;
 	} pro, opp;
 
-	Stats() { }
-	void count_used(player_t p, int slot_) {
+	template<SlotDataType T>
+	void count(player_t p, int slot_) {
 		Player& player = (p == PRO) ? pro : opp;
 		std::vector<SlotInfo>::iterator it = find_if(player.slots.begin(), player.slots.end(), FindSlot(slot_));
-		if (it != player.slots.end()) it->used++;
-		else {
+		if (it == player.slots.end()) {
 			player.slots.push_back(SlotInfo(slot_));
-			player.slots.back().used++;
+			it = player.slots.end() - 1;
 		}
+		
+		int *data;
+		switch (T) {
+		case USED: data = &it->used;  break;
+		case ATTACKED: data = &it->attacked;  break;
+		}
+		(*data)++;
 	}
-	void count_attacked(player_t p, int slot_) {
+
+	template<SlotDataType T>
+	void add(player_t p, int slot_, int value_) {
 		Player& player = (p == PRO) ? pro : opp;
 		std::vector<SlotInfo>::iterator it = find_if(player.slots.begin(), player.slots.end(), FindSlot(slot_));
-		if (it != player.slots.end()) it->attacked++;
-		else {
+		if (it == player.slots.end()) {
 			player.slots.push_back(SlotInfo(slot_));
-			player.slots.back().attacked++;
+			it = player.slots.end() - 1;
 		}
-	}
-	void damage(player_t p, int slot_, int damage_) {
-		Player& player = (p == PRO) ? pro : opp;
-		std::vector<SlotInfo>::iterator it = find_if(player.slots.begin(), player.slots.end(), FindSlot(slot_));
-		if (it != player.slots.end()) it->damage += damage_;
-		else {
-			player.slots.push_back(SlotInfo(slot_));
-			player.slots.back().damage += damage_;
+		
+		int *data;
+		switch (T) {
+		case DAMAGE: data = &it->damage;  break;
+		case HEAL: data = &it->heal;  break;
 		}
+		(*data) += value_;
 	}
-	void heal(player_t p, int slot_, int heal_) {
-		Player& player = (p == PRO) ? pro : opp;
-		std::vector<SlotInfo>::iterator it = find_if(player.slots.begin(), player.slots.end(), FindSlot(slot_));
-		if (it != player.slots.end()) it->heal += heal_;
-		else {
-			player.slots.push_back(SlotInfo(slot_));
-			player.slots.back().heal += heal_;
-		}
-	}
+
 	void proc() {
-#if 1
-		std::sort(pro.slots.begin(), pro.slots.end(), SortUsed());
-		std::sort(opp.slots.begin(), opp.slots.end(), SortUsed());
-#endif
-#if 0
-		std::sort(pro.slots.begin(), pro.slots.end(), SortAttacked());
-		std::sort(opp.slots.begin(), opp.slots.end(), SortAttacked());
-#endif
+		std::sort(pro.slots.begin(), pro.slots.end(), SortSlots<USED>());
+		std::sort(opp.slots.begin(), opp.slots.end(), SortSlots<USED>());
 	}
 };
 
